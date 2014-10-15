@@ -4,6 +4,8 @@
 // </copyright>
 //------------------------------------------------------------------------------
 
+using System.IO;
+
 namespace AudioBasics_WPF
 {
     using System;
@@ -163,6 +165,8 @@ namespace AudioBasics_WPF
             // set IsAvailableChanged event notifier
             this.kinectSensor.IsAvailableChanged += this.Sensor_IsAvailableChanged;
 
+            sw.WriteLine("{0}\t{1}\t{2}\t{3}", "timestamp", "angle", "confidence", "loudness");
+
             if (this.kinectSensor != null)
             {
                 // Open the sensor
@@ -249,6 +253,13 @@ namespace AudioBasics_WPF
             }
         }
 
+        readonly StreamWriter sw = new StreamWriter(DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss.fff") + ".txt");
+
+        private string GetTimestamp()
+        {
+            return DateTime.Now.ToString("HH:mm:ss.fff");
+        }
+
         /// <summary>
         /// Handles the audio frame data arriving from the sensor
         /// </summary>
@@ -256,8 +267,14 @@ namespace AudioBasics_WPF
         /// <param name="e">event arguments</param>
         private void Reader_FrameArrived(object sender, AudioBeamFrameArrivedEventArgs e)
         {
+            var timestamp = GetTimestamp();
+            var beam = this.kinectSensor.AudioSource.AudioBeams[0];
+            
+
             AudioBeamFrameReference frameReference = e.FrameReference;
             AudioBeamFrameList frameList = frameReference.AcquireBeamFrames();
+
+            float loudness = 0.0F;
 
             if (frameList != null)
             {
@@ -298,6 +315,9 @@ namespace AudioBasics_WPF
                         {
                             // Extract the 32-bit IEEE float sample from the byte array
                             float audioSample = BitConverter.ToSingle(this.audioBuffer, i);
+                            float audioAbs = Math.Abs(audioSample);
+                            if (audioAbs > loudness)
+                                loudness = audioAbs;
 
                             this.accumulatedSquareSum += audioSample * audioSample;
                             ++this.accumulatedSampleCount;
@@ -338,6 +358,9 @@ namespace AudioBasics_WPF
                     }
                 }
             }
+
+            //if (loudness > 0.001f)
+                sw.WriteLine("{0}\t{1}\t{2}\t{3}", timestamp, beam.BeamAngle, beam.BeamAngleConfidence, loudness);
         }
         
         /// <summary>
