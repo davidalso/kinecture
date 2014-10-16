@@ -5,6 +5,10 @@
 //------------------------------------------------------------------------------
 
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Windows.Documents;
+using Microsoft.Samples.Kinect.SpeechBasics;
 
 namespace AudioBasics_WPF
 {
@@ -16,6 +20,8 @@ namespace AudioBasics_WPF
     using System.Windows.Media;
     using System.Windows.Media.Imaging;
     using Microsoft.Kinect;
+    using Microsoft.Speech.AudioFormat;
+    using Microsoft.Speech.Recognition;
 
     /// <summary>
     /// Interaction logic for MainWindow.
@@ -151,6 +157,57 @@ namespace AudioBasics_WPF
         /// </summary>
         private int energyRefreshIndex;
 
+        // TODO: copied from MS Speech example -- do we need this?
+        /// <summary>
+        /// Stream for 32b-16b conversion.
+        /// </summary>
+        private KinectAudioStream convertStream = null;
+
+        /// <summary>
+        /// Gets the metadata for the speech recognizer (acoustic model) most suitable to
+        /// process audio from Kinect device.
+        /// </summary>
+        /// <returns>
+        /// RecognizerInfo if found, <code>null</code> otherwise.
+        /// </returns>
+        private static RecognizerInfo TryGetKinectRecognizer()
+        {
+            IEnumerable<RecognizerInfo> recognizers;
+
+            // This is required to catch the case when an expected recognizer is not installed.
+            // By default - the x86 Speech Runtime is always expected. 
+            try
+            {
+                recognizers = SpeechRecognitionEngine.InstalledRecognizers();
+            }
+            catch (COMException)
+            {
+                return null;
+            }
+
+            foreach (RecognizerInfo recognizer in recognizers)
+            {
+                string value;
+                recognizer.AdditionalInfo.TryGetValue("Kinect", out value);
+                if ("True".Equals(value, StringComparison.OrdinalIgnoreCase) && "en-US".Equals(recognizer.Culture.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return recognizer;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// List of all UI span elements used to select recognized text.
+        /// </summary>
+        private List<Span> recognitionSpans;
+
+        /// <summary>
+        /// Speech recognition engine using audio data from Kinect.
+        /// </summary>
+        private SpeechRecognitionEngine speechEngine = null;
+
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
         /// </summary>
@@ -165,7 +222,7 @@ namespace AudioBasics_WPF
             // set IsAvailableChanged event notifier
             this.kinectSensor.IsAvailableChanged += this.Sensor_IsAvailableChanged;
 
-            sw.WriteLine("{0}\t{1}\t{2}\t{3}", "timestamp", "angle", "confidence", "loudness");
+            sw.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", "timestamp", "angle", "confidence", "loudness", "speech");
 
             if (this.kinectSensor != null)
             {
@@ -194,6 +251,14 @@ namespace AudioBasics_WPF
                 audioSource.AudioBeams[0].AudioBeamMode = AudioBeamMode.Manual;
                 audioSource.AudioBeams[0].BeamAngle = 0;
                 */
+
+                // Speech recognition
+                // grab the audio stream
+                IReadOnlyList<AudioBeam> audioBeamList = this.kinectSensor.AudioSource.AudioBeams;
+                System.IO.Stream audioStream = audioBeamList[0].OpenInputStream();
+
+                // create the convert stream
+                this.convertStream = new KinectAudioStream(audioStream);
             }
             else
             {
@@ -203,6 +268,43 @@ namespace AudioBasics_WPF
             }
 
             this.energyBitmap = new WriteableBitmap(EnergyBitmapWidth, EnergyBitmapHeight, 96, 96, PixelFormats.Indexed1, new BitmapPalette(new List<Color> { Colors.White, (Color)this.Resources["KinectPurpleColor"] }));
+
+            RecognizerInfo ri = TryGetKinectRecognizer();
+
+            if (null != ri) {
+                this.speechEngine = new SpeechRecognitionEngine(ri.Id);
+
+                // TODO: we don't actually care about the grammar!
+                var directions = new Choices();
+                directions.Add(new SemanticResultValue("forward", "FORWARD"));
+                directions.Add(new SemanticResultValue("forwards", "FORWARD"));
+                directions.Add(new SemanticResultValue("straight", "FORWARD"));
+                directions.Add(new SemanticResultValue("backward", "BACKWARD"));
+                directions.Add(new SemanticResultValue("backwards", "BACKWARD"));
+                directions.Add(new SemanticResultValue("back", "BACKWARD"));
+                directions.Add(new SemanticResultValue("turn left", "LEFT"));
+                directions.Add(new SemanticResultValue("turn right", "RIGHT"));
+                var gb = new GrammarBuilder { Culture = ri.Culture };
+                gb.Append(directions);
+                var g = new Grammar(gb);
+
+                this.speechEngine.LoadGrammar(g);
+
+                this.speechEngine.SpeechDetected += this.SpeechDetected;
+                this.speechEngine.SpeechRecognized += this.SpeechRecognized;
+                this.speechEngine.SpeechRecognitionRejected += this.SpeechRejected;
+
+                // let the convertStream know speech is going active
+                this.convertStream.SpeechActive = true;
+
+                // For long recognition sessions (a few hours or more), it may be beneficial to turn off adaptation of the acoustic model. 
+                // This will prevent recognition accuracy from degrading over time.
+                ////speechEngine.UpdateRecognizerSetting("AdaptationOn", 0);
+
+                this.speechEngine.SetInputToAudioStream(
+                    this.convertStream, new SpeechAudioFormatInfo(EncodingFormat.Pcm, 16000, 16, 1, 32000, 2, null));
+                this.speechEngine.RecognizeAsync(RecognizeMode.Multiple);
+            }
         }
 
         /// <summary>
@@ -360,7 +462,7 @@ namespace AudioBasics_WPF
             }
 
             //if (loudness > 0.001f)
-                sw.WriteLine("{0}\t{1}\t{2}\t{3}", timestamp, beam.BeamAngle, beam.BeamAngleConfidence, loudness);
+            sw.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", timestamp, beam.BeamAngle, beam.BeamAngleConfidence, loudness, CurrentlySpeaking);
         }
         
         /// <summary>
@@ -456,6 +558,37 @@ namespace AudioBasics_WPF
             // on failure, set the status text
             this.statusBarText.Text = this.kinectSensor.IsAvailable ? Properties.Resources.RunningStatusText
                                                             : Properties.Resources.SensorNotAvailableStatusText;
+        }
+
+        private bool CurrentlySpeaking = false;
+
+        // Handle the SpeechDetected event.
+        private void SpeechDetected(object sender, SpeechDetectedEventArgs e)
+        {
+            Console.WriteLine("Speech detected at AudioPosition = {0}", e.AudioPosition);
+            CurrentlySpeaking = true;
+        }
+
+        /// <summary>
+        /// Handler for recognized speech events.
+        /// </summary>
+        /// <param name="sender">object sending the event.</param>
+        /// <param name="e">event arguments.</param>
+        private void SpeechRecognized(object sender, SpeechRecognizedEventArgs e)
+        {
+            Console.WriteLine("recognized " + e.Result.Confidence);
+            CurrentlySpeaking = false;
+        }
+
+        /// <summary>
+        /// Handler for rejected speech events.
+        /// </summary>
+        /// <param name="sender">object sending the event.</param>
+        /// <param name="e">event arguments.</param>
+        private void SpeechRejected(object sender, SpeechRecognitionRejectedEventArgs e)
+        {
+            Console.WriteLine("rejected");
+            CurrentlySpeaking = false;
         }
     }
 }
