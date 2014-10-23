@@ -23,6 +23,7 @@ namespace AudioBasics_WPF
     using Microsoft.Speech.AudioFormat;
     using Microsoft.Speech.Recognition;
 
+
     /// <summary>
     /// Interaction logic for MainWindow.
     /// </summary>
@@ -32,6 +33,11 @@ namespace AudioBasics_WPF
         /// Number of samples captured from Kinect audio stream each millisecond.
         /// </summary>
         private const int SamplesPerMillisecond = 16;
+
+        /// <summary>
+        /// List of all UI span elements used to select recognized text.
+        /// </summary>
+        private List<Span> recognitionSpans;
 
         /// <summary>
         /// Number of bytes in each Kinect audio stream sample (32-bit IEEE float).
@@ -157,56 +163,7 @@ namespace AudioBasics_WPF
         /// </summary>
         private int energyRefreshIndex;
 
-        // TODO: copied from MS Speech example -- do we need this?
-        /// <summary>
-        /// Stream for 32b-16b conversion.
-        /// </summary>
-        private KinectAudioStream convertStream = null;
-
-        /// <summary>
-        /// Gets the metadata for the speech recognizer (acoustic model) most suitable to
-        /// process audio from Kinect device.
-        /// </summary>
-        /// <returns>
-        /// RecognizerInfo if found, <code>null</code> otherwise.
-        /// </returns>
-        private static RecognizerInfo TryGetKinectRecognizer()
-        {
-            IEnumerable<RecognizerInfo> recognizers;
-
-            // This is required to catch the case when an expected recognizer is not installed.
-            // By default - the x86 Speech Runtime is always expected. 
-            try
-            {
-                recognizers = SpeechRecognitionEngine.InstalledRecognizers();
-            }
-            catch (COMException)
-            {
-                return null;
-            }
-
-            foreach (RecognizerInfo recognizer in recognizers)
-            {
-                string value;
-                recognizer.AdditionalInfo.TryGetValue("Kinect", out value);
-                if ("True".Equals(value, StringComparison.OrdinalIgnoreCase) && "en-US".Equals(recognizer.Culture.Name, StringComparison.OrdinalIgnoreCase))
-                {
-                    return recognizer;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// List of all UI span elements used to select recognized text.
-        /// </summary>
-        private List<Span> recognitionSpans;
-
-        /// <summary>
-        /// Speech recognition engine using audio data from Kinect.
-        /// </summary>
-        private SpeechRecognitionEngine speechEngine = null;
+        private readonly Kinecture myKinecture;
 
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
@@ -221,8 +178,6 @@ namespace AudioBasics_WPF
 
             // set IsAvailableChanged event notifier
             this.kinectSensor.IsAvailableChanged += this.Sensor_IsAvailableChanged;
-
-            sw.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", "timestamp", "angle", "confidence", "loudness", "speech");
 
             if (this.kinectSensor != null)
             {
@@ -257,8 +212,8 @@ namespace AudioBasics_WPF
                 IReadOnlyList<AudioBeam> audioBeamList = this.kinectSensor.AudioSource.AudioBeams;
                 System.IO.Stream audioStream = audioBeamList[0].OpenInputStream();
 
-                // create the convert stream
-                this.convertStream = new KinectAudioStream(audioStream);
+                this.myKinecture = new Kinecture(kinectSensor, audioStream);
+                myKinecture.Initialize();
             }
             else
             {
@@ -268,43 +223,6 @@ namespace AudioBasics_WPF
             }
 
             this.energyBitmap = new WriteableBitmap(EnergyBitmapWidth, EnergyBitmapHeight, 96, 96, PixelFormats.Indexed1, new BitmapPalette(new List<Color> { Colors.White, (Color)this.Resources["KinectPurpleColor"] }));
-
-            RecognizerInfo ri = TryGetKinectRecognizer();
-
-            if (null != ri) {
-                this.speechEngine = new SpeechRecognitionEngine(ri.Id);
-
-                // TODO: we don't actually care about the grammar!
-                var directions = new Choices();
-                directions.Add(new SemanticResultValue("chris", "CHRIS"));
-                directions.Add(new SemanticResultValue("forwards", "FORWARD"));
-                directions.Add(new SemanticResultValue("straight", "FORWARD"));
-                directions.Add(new SemanticResultValue("backward", "BACKWARD"));
-                directions.Add(new SemanticResultValue("backwards", "BACKWARD"));
-                directions.Add(new SemanticResultValue("back", "BACKWARD"));
-                directions.Add(new SemanticResultValue("turn left", "LEFT"));
-                directions.Add(new SemanticResultValue("turn right", "RIGHT"));
-                var gb = new GrammarBuilder { Culture = ri.Culture };
-                gb.Append(directions);
-                var g = new Grammar(gb);
-
-                this.speechEngine.LoadGrammar(g);
-
-                this.speechEngine.SpeechDetected += this.SpeechDetected;
-                this.speechEngine.SpeechRecognized += this.SpeechRecognized;
-                this.speechEngine.SpeechRecognitionRejected += this.SpeechRejected;
-
-                // let the convertStream know speech is going active
-                this.convertStream.SpeechActive = true;
-
-                // For long recognition sessions (a few hours or more), it may be beneficial to turn off adaptation of the acoustic model. 
-                // This will prevent recognition accuracy from degrading over time.
-                ////speechEngine.UpdateRecognizerSetting("AdaptationOn", 0);
-
-                this.speechEngine.SetInputToAudioStream(
-                    this.convertStream, new SpeechAudioFormatInfo(EncodingFormat.Pcm, 16000, 16, 1, 32000, 2, null));
-                this.speechEngine.RecognizeAsync(RecognizeMode.Multiple);
-            }
         }
 
         /// <summary>
@@ -355,13 +273,6 @@ namespace AudioBasics_WPF
             }
         }
 
-        readonly StreamWriter sw = new StreamWriter(DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss.fff") + ".txt");
-
-        private string GetTimestamp()
-        {
-            return DateTime.Now.ToString("HH:mm:ss.fff");
-        }
-
         /// <summary>
         /// Handles the audio frame data arriving from the sensor
         /// </summary>
@@ -369,99 +280,87 @@ namespace AudioBasics_WPF
         /// <param name="e">event arguments</param>
         private void Reader_FrameArrived(object sender, AudioBeamFrameArrivedEventArgs e)
         {
-            var timestamp = GetTimestamp();
-            var beam = this.kinectSensor.AudioSource.AudioBeams[0];
-            
-
             AudioBeamFrameReference frameReference = e.FrameReference;
             AudioBeamFrameList frameList = frameReference.AcquireBeamFrames();
 
-            float loudness = 0.0F;
-
-            if (frameList != null)
+            if (frameList == null) return;
+            // AudioBeamFrameList is IDisposable
+            using (frameList)
             {
-                // AudioBeamFrameList is IDisposable
-                using (frameList)
+                myKinecture.OnFrame(frameList);
+
+                // Only one audio beam is supported. Get the sub frame list for this beam
+                IReadOnlyList<AudioBeamSubFrame> subFrameList = frameList[0].SubFrames;
+                // Loop over all sub frames, extract audio buffer and beam information
+                foreach (AudioBeamSubFrame subFrame in subFrameList)
                 {
-                    // Only one audio beam is supported. Get the sub frame list for this beam
-                    IReadOnlyList<AudioBeamSubFrame> subFrameList = frameList[0].SubFrames;
-                    // Loop over all sub frames, extract audio buffer and beam information
-                    foreach (AudioBeamSubFrame subFrame in subFrameList)
+                    // Check if beam angle and/or confidence have changed
+                    bool updateBeam = false;
+
+                    if (subFrame.BeamAngle != this.beamAngle)
                     {
-                        // Check if beam angle and/or confidence have changed
-                        bool updateBeam = false;
+                        this.beamAngle = subFrame.BeamAngle;
+                        updateBeam = true;
+                    }
 
-                        if (subFrame.BeamAngle != this.beamAngle)
+                    if (subFrame.BeamAngleConfidence != this.beamAngleConfidence)
+                    {
+                        this.beamAngleConfidence = subFrame.BeamAngleConfidence;
+                        updateBeam = true;
+                    }
+
+                    if (updateBeam)
+                    {
+                        // Refresh display of audio beam
+                        this.AudioBeamChanged();
+                    }
+
+                    // Process audio buffer
+                    subFrame.CopyFrameDataToArray(this.audioBuffer);
+
+                    for (int i = 0; i < this.audioBuffer.Length; i += BytesPerSample)
+                    {
+                        // Extract the 32-bit IEEE float sample from the byte array
+                        float audioSample = BitConverter.ToSingle(this.audioBuffer, i);
+
+                        this.accumulatedSquareSum += audioSample * audioSample;
+                        ++this.accumulatedSampleCount;
+
+                        if (this.accumulatedSampleCount < SamplesPerColumn)
                         {
-                            this.beamAngle = subFrame.BeamAngle;
-                            updateBeam = true;
+                            continue;
                         }
 
-                        if (subFrame.BeamAngleConfidence != this.beamAngleConfidence)
+                        float meanSquare = this.accumulatedSquareSum / SamplesPerColumn;
+
+                        if (meanSquare > 1.0f)
+                        {   
+                            // A loud audio source right next to the sensor may result in mean square values
+                            // greater than 1.0. Cap it at 1.0f for display purposes.
+                            meanSquare = 1.0f;
+                        } 
+
+                        // Calculate energy in dB, in the range [MinEnergy, 0], where MinEnergy < 0
+                        float energy = MinEnergy;
+
+                        if (meanSquare > 0)
                         {
-                            this.beamAngleConfidence = subFrame.BeamAngleConfidence;
-                            updateBeam = true;
+                            energy = (float)(10.0 * Math.Log10(meanSquare));
                         }
 
-                        if (updateBeam)
+                        lock (this.energyLock)
                         {
-                            // Refresh display of audio beam
-                            this.AudioBeamChanged();
+                            // Normalize values to the range [0, 1] for display
+                            this.energy[this.energyIndex] = (MinEnergy - energy) / MinEnergy;
+                            this.energyIndex = (this.energyIndex + 1) % this.energy.Length;
+                            ++this.newEnergyAvailable;
                         }
 
-                        // Process audio buffer
-                        subFrame.CopyFrameDataToArray(this.audioBuffer);
-
-                        for (int i = 0; i < this.audioBuffer.Length; i += BytesPerSample)
-                        {
-                            // Extract the 32-bit IEEE float sample from the byte array
-                            float audioSample = BitConverter.ToSingle(this.audioBuffer, i);
-                            float audioAbs = Math.Abs(audioSample);
-                            if (audioAbs > loudness)
-                                loudness = audioAbs;
-
-                            this.accumulatedSquareSum += audioSample * audioSample;
-                            ++this.accumulatedSampleCount;
-
-                            if (this.accumulatedSampleCount < SamplesPerColumn)
-                            {
-                                continue;
-                            }
-
-                            float meanSquare = this.accumulatedSquareSum / SamplesPerColumn;
-
-                            if (meanSquare > 1.0f)
-                            {   
-                                // A loud audio source right next to the sensor may result in mean square values
-                                // greater than 1.0. Cap it at 1.0f for display purposes.
-                                meanSquare = 1.0f;
-                            } 
-
-                            // Calculate energy in dB, in the range [MinEnergy, 0], where MinEnergy < 0
-                            float energy = MinEnergy;
-
-                            if (meanSquare > 0)
-                            {
-                                energy = (float)(10.0 * Math.Log10(meanSquare));
-                            }
-
-                            lock (this.energyLock)
-                            {
-                                // Normalize values to the range [0, 1] for display
-                                this.energy[this.energyIndex] = (MinEnergy - energy) / MinEnergy;
-                                this.energyIndex = (this.energyIndex + 1) % this.energy.Length;
-                                ++this.newEnergyAvailable;
-                            }
-
-                            this.accumulatedSquareSum = 0;
-                            this.accumulatedSampleCount = 0;
-                        }
+                        this.accumulatedSquareSum = 0;
+                        this.accumulatedSampleCount = 0;
                     }
                 }
             }
-
-            //if (loudness > 0.001f)
-            sw.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", timestamp, beam.BeamAngle, beam.BeamAngleConfidence, loudness, Convert.ToInt32(CurrentlySpeaking));
         }
         
         /// <summary>
@@ -557,37 +456,6 @@ namespace AudioBasics_WPF
             // on failure, set the status text
             this.statusBarText.Text = this.kinectSensor.IsAvailable ? Properties.Resources.RunningStatusText
                                                             : Properties.Resources.SensorNotAvailableStatusText;
-        }
-
-        private bool CurrentlySpeaking = false;
-
-        // Handle the SpeechDetected event.
-        private void SpeechDetected(object sender, SpeechDetectedEventArgs e)
-        {
-            Console.WriteLine("Speech detected at AudioPosition = {0}", e.AudioPosition);
-            CurrentlySpeaking = true;
-        }
-
-        /// <summary>
-        /// Handler for recognized speech events.
-        /// </summary>
-        /// <param name="sender">object sending the event.</param>
-        /// <param name="e">event arguments.</param>
-        private void SpeechRecognized(object sender, SpeechRecognizedEventArgs e)
-        {
-            Console.WriteLine("recognized '{0}' with {1}", e.Result.Text, e.Result.Confidence);
-            CurrentlySpeaking = false;
-        }
-
-        /// <summary>
-        /// Handler for rejected speech events.
-        /// </summary>
-        /// <param name="sender">object sending the event.</param>
-        /// <param name="e">event arguments.</param>
-        private void SpeechRejected(object sender, SpeechRecognitionRejectedEventArgs e)
-        {
-            Console.WriteLine("rejected");
-            CurrentlySpeaking = false;
         }
     }
 }
