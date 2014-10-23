@@ -276,7 +276,7 @@ namespace AudioBasics_WPF
 
                 // TODO: we don't actually care about the grammar!
                 var directions = new Choices();
-                directions.Add(new SemanticResultValue("forward", "FORWARD"));
+                directions.Add(new SemanticResultValue("chris", "CHRIS"));
                 directions.Add(new SemanticResultValue("forwards", "FORWARD"));
                 directions.Add(new SemanticResultValue("straight", "FORWARD"));
                 directions.Add(new SemanticResultValue("backward", "BACKWARD"));
@@ -385,7 +385,6 @@ namespace AudioBasics_WPF
                 {
                     // Only one audio beam is supported. Get the sub frame list for this beam
                     IReadOnlyList<AudioBeamSubFrame> subFrameList = frameList[0].SubFrames;
-
                     // Loop over all sub frames, extract audio buffer and beam information
                     foreach (AudioBeamSubFrame subFrame in subFrameList)
                     {
@@ -462,7 +461,7 @@ namespace AudioBasics_WPF
             }
 
             //if (loudness > 0.001f)
-            sw.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", timestamp, beam.BeamAngle, beam.BeamAngleConfidence, loudness, CurrentlySpeaking);
+            sw.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", timestamp, beam.BeamAngle, beam.BeamAngleConfidence, loudness, Convert.ToInt32(CurrentlySpeaking));
         }
         
         /// <summary>
@@ -576,7 +575,7 @@ namespace AudioBasics_WPF
         /// <param name="e">event arguments.</param>
         private void SpeechRecognized(object sender, SpeechRecognizedEventArgs e)
         {
-            Console.WriteLine("recognized " + e.Result.Confidence);
+            Console.WriteLine("recognized '{0}' with {1}", e.Result.Text, e.Result.Confidence);
             CurrentlySpeaking = false;
         }
 
