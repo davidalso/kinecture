@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Timers;
 using Microsoft.Kinect;
 
 namespace AudioBasics_WPF
@@ -24,13 +25,21 @@ namespace AudioBasics_WPF
         /// </summary>
         private readonly byte[] audioBuffer = null;
 
+        private const int TIMER_INTERVAL = 50; // milliseconds
+
+        private static string GetTimestamp(DateTime d)
+        {
+            return d.ToString("HH:mm:ss.fff");
+        }
+
         private static string GetTimestamp()
         {
-            return DateTime.Now.ToString("HH:mm:ss.fff");
+            return GetTimestamp(DateTime.Now);
         }
 
         private readonly Speech speech;
         private readonly Recorder recorder;
+        private Timer aTimer;
 
         public Kinecture(KinectSensor kinectSensor)
         {
@@ -47,6 +56,7 @@ namespace AudioBasics_WPF
             // With 4 bytes per sample, that gives us 1024 bytes.
             this.audioBuffer = new byte[kinectSensor.AudioSource.SubFrameLengthInBytes];
 
+            // TODO: can both of these use the same stream?
             this.speech = new Speech(audioStream);
             this.recorder = new Recorder(filename, kinectSensor);
         }
@@ -56,16 +66,32 @@ namespace AudioBasics_WPF
             sw.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", "timestamp", "angle", "confidence", "loudness", "speech");
             speech.Start();
             recorder.Start();
+            // Create a timer with a two second interval.
+            aTimer = new System.Timers.Timer(TIMER_INTERVAL);
+            // Hook up the Elapsed event for the timer. 
+            aTimer.Elapsed += OnTimedEvent;
+            aTimer.Enabled = true;
         }
+
+        private void OnTimedEvent(Object source, ElapsedEventArgs e)
+        {
+            var beam = this.kinectSensor.AudioSource.AudioBeams[0];
+            var timestamp = GetTimestamp(e.SignalTime);
+            sw.WriteLine(
+                "{0}\t{1}\t{2}\t{3}\t{4}", 
+                timestamp, 
+                beam.BeamAngle, 
+                beam.BeamAngleConfidence, 
+                loudness, 
+                Convert.ToInt32(speech.CurrentlySpeaking)
+            );
+        }
+
+        // TODO: are there any threading issues?
+        float loudness = 0.0F;
 
         public void OnFrame(AudioBeamFrameList frameList)
         {
-            var timestamp = GetTimestamp();
-
-            float loudness = 0.0F;
-
-            var beam = this.kinectSensor.AudioSource.AudioBeams[0];
-
             // Only one audio beam is supported. Get the sub frame list for this beam
             IReadOnlyList<AudioBeamSubFrame> subFrameList = frameList[0].SubFrames;
             // Loop over all sub frames, extract audio buffer and beam information
@@ -83,9 +109,6 @@ namespace AudioBasics_WPF
                         loudness = audioAbs;
                 }
             }
-
-            //if (loudness > 0.001f)
-            //sw.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", timestamp, beam.BeamAngle, beam.BeamAngleConfidence, loudness, Convert.ToInt32(speech.CurrentlySpeaking));
         }
     }
 }

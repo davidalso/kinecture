@@ -270,7 +270,7 @@ namespace AudioBasics_WPF
             // AudioBeamFrameList is IDisposable
             using (frameList)
             {
-                //myKinecture.OnFrame(frameList);
+                myKinecture.OnFrame(frameList);
 
                 // Only one audio beam is supported. Get the sub frame list for this beam
                 IReadOnlyList<AudioBeamSubFrame> subFrameList = frameList[0].SubFrames;
