@@ -195,12 +195,7 @@ namespace AudioBasics_WPF
                 audioSource.AudioBeams[0].BeamAngle = 0;
                 */
 
-                // Speech recognition
-                // grab the audio stream
-                IReadOnlyList<AudioBeam> audioBeamList = this.kinectSensor.AudioSource.AudioBeams;
-                System.IO.Stream audioStream = audioBeamList[0].OpenInputStream();
-
-                this.myKinecture = new Kinecture(kinectSensor, audioStream);
+                this.myKinecture = new Kinecture(kinectSensor);
                 myKinecture.Initialize();
             }
             else
@@ -275,7 +270,7 @@ namespace AudioBasics_WPF
             // AudioBeamFrameList is IDisposable
             using (frameList)
             {
-                myKinecture.OnFrame(frameList);
+                //myKinecture.OnFrame(frameList);
 
                 // Only one audio beam is supported. Get the sub frame list for this beam
                 IReadOnlyList<AudioBeamSubFrame> subFrameList = frameList[0].SubFrames;

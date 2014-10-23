@@ -7,7 +7,7 @@ namespace AudioBasics_WPF
 {
     class Kinecture
     {
-        private readonly StreamWriter sw = new StreamWriter(DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss.fff") + ".txt");
+        private readonly StreamWriter sw;
 
         /// <summary>
         /// Active Kinect sensor
@@ -30,10 +30,17 @@ namespace AudioBasics_WPF
         }
 
         private readonly Speech speech;
+        private readonly Recorder recorder;
 
-        public Kinecture(KinectSensor kinectSensor, Stream audioStream)
+        public Kinecture(KinectSensor kinectSensor)
         {
             this.kinectSensor = kinectSensor;
+
+            IReadOnlyList<AudioBeam> audioBeamList = this.kinectSensor.AudioSource.AudioBeams;
+            System.IO.Stream audioStream = audioBeamList[0].OpenInputStream();
+
+            var filename = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss.fff");
+            sw = new StreamWriter(filename + ".txt");
 
             // Allocate 1024 bytes to hold a single audio sub frame. Duration sub frame 
             // is 16 msec, the sample rate is 16khz, which means 256 samples per sub frame. 
@@ -41,12 +48,14 @@ namespace AudioBasics_WPF
             this.audioBuffer = new byte[kinectSensor.AudioSource.SubFrameLengthInBytes];
 
             this.speech = new Speech(audioStream);
+            this.recorder = new Recorder(filename, kinectSensor);
         }
 
         public void Initialize()
         {
             sw.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", "timestamp", "angle", "confidence", "loudness", "speech");
-            speech.Initialize();
+            speech.Start();
+            recorder.Start();
         }
 
         public void OnFrame(AudioBeamFrameList frameList)
@@ -76,7 +85,7 @@ namespace AudioBasics_WPF
             }
 
             //if (loudness > 0.001f)
-            sw.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", timestamp, beam.BeamAngle, beam.BeamAngleConfidence, loudness, Convert.ToInt32(speech.CurrentlySpeaking));
+            //sw.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", timestamp, beam.BeamAngle, beam.BeamAngleConfidence, loudness, Convert.ToInt32(speech.CurrentlySpeaking));
         }
     }
 }

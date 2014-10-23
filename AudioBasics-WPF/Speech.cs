@@ -32,7 +32,7 @@ namespace AudioBasics_WPF
             CurrentlySpeaking = false;
         }
 
-        public void Initialize()
+        public void Start()
         {
             RecognizerInfo ri = TryGetKinectRecognizer();
 
