@@ -4,11 +4,7 @@
 // </copyright>
 //------------------------------------------------------------------------------
 
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows.Documents;
-using Microsoft.Samples.Kinect.SpeechBasics;
 
 namespace AudioBasics_WPF
 {
@@ -20,9 +16,6 @@ namespace AudioBasics_WPF
     using System.Windows.Media;
     using System.Windows.Media.Imaging;
     using Microsoft.Kinect;
-    using Microsoft.Speech.AudioFormat;
-    using Microsoft.Speech.Recognition;
-
 
     /// <summary>
     /// Interaction logic for MainWindow.
@@ -33,11 +26,6 @@ namespace AudioBasics_WPF
         /// Number of samples captured from Kinect audio stream each millisecond.
         /// </summary>
         private const int SamplesPerMillisecond = 16;
-
-        /// <summary>
-        /// List of all UI span elements used to select recognized text.
-        /// </summary>
-        private List<Span> recognitionSpans;
 
         /// <summary>
         /// Number of bytes in each Kinect audio stream sample (32-bit IEEE float).
