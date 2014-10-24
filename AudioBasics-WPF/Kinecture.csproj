@@ -67,6 +67,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ComplexNumber.cs" />
+    <Compile Include="FftAlgorithm.cs" />
     <Compile Include="Recorder.cs" />
     <Compile Include="Speech.cs" />
     <Page Include="MainWindow.xaml">
