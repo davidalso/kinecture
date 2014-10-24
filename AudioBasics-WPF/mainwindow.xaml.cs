@@ -4,7 +4,8 @@
 // </copyright>
 //------------------------------------------------------------------------------
 
-using System.Windows.Documents;
+using System.IO;
+using System.Windows.Forms;
 
 namespace AudioBasics_WPF
 {
@@ -196,7 +197,6 @@ namespace AudioBasics_WPF
                 */
 
                 this.myKinecture = new Kinecture(kinectSensor);
-                myKinecture.Initialize();
             }
             else
             {
@@ -253,6 +253,12 @@ namespace AudioBasics_WPF
             {
                 this.kinectSensor.Close();
                 this.kinectSensor = null;
+            }
+
+            // TODO: do we need to check this?
+            if (myKinecture.Started)
+            {
+                myKinecture.Stop();
             }
         }
 
@@ -439,6 +445,32 @@ namespace AudioBasics_WPF
             // on failure, set the status text
             this.statusBarText.Text = this.kinectSensor.IsAvailable ? Properties.Resources.RunningStatusText
                                                             : Properties.Resources.SensorNotAvailableStatusText;
+        }
+
+        private void SetStatusText(string text)
+        {
+            statusBarText.Text = text + " Saving to "; // TODO: CONTINUE HERE
+        }
+
+        private void Start_Click(object sender, RoutedEventArgs e)
+        {
+            if (myKinecture.Started)
+            {
+                StartButton.Content = "Start";
+                myKinecture.Stop();
+            }
+            else
+            {
+                SaveFileDialog save = new SaveFileDialog();
+                save.Filter = "ANY|*.*";
+                save.FileName = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss.fff");
+                // TODO: more WIndows 8ish?
+                if (save.ShowDialog() == System.Windows.Forms.DialogResult.OK) // this is where it needs to be altered
+                {
+                    this.StartButton.Content = "Stop";
+                    myKinecture.Start(save.FileName);
+                }
+            }
         }
     }
 }

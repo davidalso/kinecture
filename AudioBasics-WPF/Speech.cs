@@ -8,6 +8,12 @@ using System.Threading.Tasks;
 using Microsoft.Samples.Kinect.SpeechBasics;
 using Microsoft.Speech.AudioFormat;
 using Microsoft.Speech.Recognition;
+using RecognizeMode = Microsoft.Speech.Recognition.RecognizeMode;
+using RecognizerInfo = Microsoft.Speech.Recognition.RecognizerInfo;
+using SpeechDetectedEventArgs = Microsoft.Speech.Recognition.SpeechDetectedEventArgs;
+using SpeechRecognitionEngine = Microsoft.Speech.Recognition.SpeechRecognitionEngine;
+using SpeechRecognitionRejectedEventArgs = Microsoft.Speech.Recognition.SpeechRecognitionRejectedEventArgs;
+using SpeechRecognizedEventArgs = Microsoft.Speech.Recognition.SpeechRecognizedEventArgs;
 
 namespace AudioBasics_WPF
 {
@@ -53,6 +59,9 @@ namespace AudioBasics_WPF
             gb.Append(directions);
             var g = new Grammar(gb);
 
+            //GrammarBuilder dictation = new GrammarBuilder();
+            //dictation.AppendDictation();
+
             this.speechEngine.LoadGrammar(g);
 
             this.speechEngine.SpeechDetected += this.SpeechDetected;
@@ -71,6 +80,11 @@ namespace AudioBasics_WPF
                 new SpeechAudioFormatInfo(EncodingFormat.Pcm, 16000, 16, 1, 32000, 2, null)
             );
             this.speechEngine.RecognizeAsync(RecognizeMode.Multiple);
+        }
+
+        public void Stop()
+        {
+            speechEngine.RecognizeAsyncStop();
         }
 
         // Handle the SpeechDetected event.

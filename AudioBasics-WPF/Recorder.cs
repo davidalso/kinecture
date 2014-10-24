@@ -12,13 +12,17 @@ namespace AudioBasics_WPF
 {
     class Recorder
     {
-        double _amountOfTimeToRecord = 5.0;
-        private readonly string filename;
+        double _amountOfTimeToRecord = 100.0;
+        public string Filename;
         private readonly KinectSensor kinect;
 
-        public Recorder(string filename, KinectSensor kinect)
+        // TODO: do we need a lock?
+        //private static object locker = new object();
+        private static bool isStopped = false;
+
+        // TODO: what to do about filename
+        public Recorder(KinectSensor kinect)
         {
-            this.filename = filename;
             this.kinect = kinect;
         }
 
@@ -26,10 +30,17 @@ namespace AudioBasics_WPF
         {
             ////Start recording audio on new thread
             var t = new Thread(new ParameterizedThreadStart(RecordAudio));
+            t.Name = "Recorder";
             t.Start(kinect);
+            isStopped = false;
 
             //You can also Record audio synchronously but it will "freeze" the UI 
             //RecordAudio(kinectSensorChooser1.Kinect); 
+        }
+
+        public void Stop()
+        {
+            isStopped = true;
         }
 
         private void RecordAudio(object kinectSensor)
@@ -48,7 +59,7 @@ namespace AudioBasics_WPF
             int recordingLength = (int)_amountOfTimeToRecord * 2 * 16000;
             byte[] buffer = new byte[1024];
 
-            using (FileStream _fileStream = new FileStream(filename + ".wav", FileMode.Create))
+            using (FileStream _fileStream = new FileStream(Filename + ".wav", FileMode.Create))
             {
                 WriteWavHeader(_fileStream, recordingLength);
 
@@ -62,17 +73,18 @@ namespace AudioBasics_WPF
                     Console.WriteLine("RECORDING START");
                     //Simply copy the data from the stream down to the file
                     int count, totalCount = 0;
-                    bool started = false;
-                    while ((count = audioStream.Read(buffer, 0, buffer.Length)) > 0 && totalCount < recordingLength)
+                    while ((count = audioStream.Read(buffer, 0, buffer.Length)) > 0 && /* totalCount < recordingLength &&*/ !isStopped)
                     {
                         _fileStream.Write(buffer, 0, count);
                         totalCount += count;
                     }
+                    _fileStream.Flush();
                     Console.WriteLine("RECORDING STOP");
                 }
+                
             }
 
-            Console.WriteLine("FILE IS DONE");
+           
         }
 
         /// <summary>

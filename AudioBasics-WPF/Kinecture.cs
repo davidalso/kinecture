@@ -8,7 +8,7 @@ namespace AudioBasics_WPF
 {
     class Kinecture
     {
-        private readonly StreamWriter sw;
+        private StreamWriter sw;
 
         /// <summary>
         /// Active Kinect sensor
@@ -40,16 +40,15 @@ namespace AudioBasics_WPF
         private readonly Speech speech;
         private readonly Recorder recorder;
         private Timer aTimer;
+        public bool Started { private set; get; }
 
         public Kinecture(KinectSensor kinectSensor)
         {
+            Started = false;
             this.kinectSensor = kinectSensor;
 
             IReadOnlyList<AudioBeam> audioBeamList = this.kinectSensor.AudioSource.AudioBeams;
             System.IO.Stream audioStream = audioBeamList[0].OpenInputStream();
-
-            var filename = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss.fff");
-            sw = new StreamWriter(filename + ".txt");
 
             // Allocate 1024 bytes to hold a single audio sub frame. Duration sub frame 
             // is 16 msec, the sample rate is 16khz, which means 256 samples per sub frame. 
@@ -58,13 +57,19 @@ namespace AudioBasics_WPF
 
             // TODO: can both of these use the same stream?
             this.speech = new Speech(audioStream);
-            this.recorder = new Recorder(filename, kinectSensor);
+            this.recorder = new Recorder(kinectSensor);
         }
 
-        public void Initialize()
+        public void Start(string filename)
         {
+            if (Started)
+                return; // TODO: log an error
+
+            sw = new StreamWriter(filename + ".txt");
+            Started = true;
             sw.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", "timestamp", "angle", "confidence", "loudness", "speech");
             speech.Start();
+            recorder.Filename = filename;
             recorder.Start();
             // Create a timer with a two second interval.
             aTimer = new System.Timers.Timer(TIMER_INTERVAL);
@@ -75,6 +80,9 @@ namespace AudioBasics_WPF
 
         private void OnTimedEvent(Object source, ElapsedEventArgs e)
         {
+            if (!Started)
+                return; // in case of race conditions
+
             var beam = this.kinectSensor.AudioSource.AudioBeams[0];
             var timestamp = GetTimestamp(e.SignalTime);
             sw.WriteLine(
@@ -92,6 +100,9 @@ namespace AudioBasics_WPF
 
         public void OnFrame(AudioBeamFrameList frameList)
         {
+            if (!Started)
+                return;
+
             // Only one audio beam is supported. Get the sub frame list for this beam
             IReadOnlyList<AudioBeamSubFrame> subFrameList = frameList[0].SubFrames;
             // Loop over all sub frames, extract audio buffer and beam information
@@ -109,6 +120,19 @@ namespace AudioBasics_WPF
                         loudness = audioAbs;
                 }
             }
+        }
+
+        public void Stop()
+        {
+            if (!Started)
+                return; // TODO: log an error
+
+            Started = false;
+            recorder.Stop();
+            speech.Stop();
+            aTimer.Dispose();
+            sw.Flush();
+            sw.Close();
         }
     }
 }
