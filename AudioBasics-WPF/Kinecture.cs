@@ -77,9 +77,15 @@ namespace AudioBasics_WPF
             if (Started)
                 return; // TODO: log an error
 
-            sw = new StreamWriter(filename + ".txt");
+            sw = new StreamWriter(filename + ".csv");
             Started = true;
-            sw.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", "timestamp", "angle", "confidence", "loudness", "speech");
+
+            string[] bins = new string[FREQUENCY_BINS.Length - 1];
+            for (int i = 0; i <= FREQUENCY_BINS.Length - 2; i++)
+            {
+                bins[i] = FREQUENCY_BINS[i] + " - " + FREQUENCY_BINS[i + 1];
+            }
+            sw.WriteLine("{0},{1},{2},{3},{4},{5}", "timestamp", "angle", "confidence", "loudness", "speech", string.Join(",", bins));
             speech.Start();
             recorder.Filename = filename;
             recorder.Start();
@@ -105,24 +111,15 @@ namespace AudioBasics_WPF
                 bins[i] = AverageAmplitudeForFrequencyRange(spectr, FREQUENCY_BINS[i], FREQUENCY_BINS[i + 1]);
             }
 
+            // TODO: clean this up
             sw.WriteLine(
-                "{0}\t{1}\t{2}\t{3}\t{4}\t{5}",
+                "{0},{1},{2},{3},{4},{5}",
                 timestamp,
                 beam.BeamAngle,
                 beam.BeamAngleConfidence,
                 loudness,
                 Convert.ToInt32(speech.CurrentlySpeaking),
-                string.Join("\t", bins)
-                );
-
-            Console.WriteLine(
-                "{0}\t{1}\t{2}\t{3}\t{4}\t{5}",
-                timestamp,
-                beam.BeamAngle,
-                beam.BeamAngleConfidence,
-                loudness,
-                Convert.ToInt32(speech.CurrentlySpeaking),
-                string.Join("\t", bins)
+                string.Join(",", bins)
                 );
         }
 
@@ -130,7 +127,7 @@ namespace AudioBasics_WPF
         private float loudness = 0.0F;
         private int test = 0;
 
-        private int[] FREQUENCY_BINS = new int[]
+        private readonly int[] FREQUENCY_BINS = new int[]
         {
             0,
             300,
@@ -169,18 +166,22 @@ namespace AudioBasics_WPF
         private double AverageAmplitudeForFrequencyRange(double[] spectrogram, float minFreq, float maxFreq)
         {
             Debug.Assert(minFreq <= maxFreq);
-            int minIndex = Math.Min(0, (int)(minFreq * spectrogram.Length / sampleRate));
-            int maxIndex = Math.Max(spectrogram.Length - 1, (int)(maxFreq * spectrogram.Length / sampleRate));
+            int minIndex = Math.Max(0, (int)(minFreq * spectrogram.Length / sampleRate));
+            int maxIndex = Math.Min(spectrogram.Length - 1, (int)(maxFreq * spectrogram.Length / sampleRate));
             Debug.Assert(minIndex <= maxIndex);
+            // TODO: make sure maxIndex isn't past half of the aray
             int rangeSize = maxIndex - minIndex + 1;
             double sum = 0.0;
 
             for (int i = minIndex; i <= maxIndex; i++)
             {
-                sum += spectrogram[i];
+                double value = spectrogram[i];
+                sum += value;
             }
 
-            return sum / rangeSize;
+            double result = sum/rangeSize;
+
+            return result;
         }
 
         public void Stop()
