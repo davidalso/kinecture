@@ -96,6 +96,8 @@ namespace AudioBasics_WPF
             aTimer.Enabled = true;
         }
 
+        public double[] LastFFT { private set; get; }
+
         private void OnTimedEvent(Object source, ElapsedEventArgs e)
         {
             if (!Started)
@@ -105,6 +107,7 @@ namespace AudioBasics_WPF
             var timestamp = GetTimestamp(e.SignalTime);
 
             double[] spectr = FftAlgorithm.Calculate(audioDoubleBuffer);
+            LastFFT = spectr;
             double[] bins = new double[FREQUENCY_BINS.Length - 1];
             for (int i = 0; i <= FREQUENCY_BINS.Length - 2; i++)
             {
