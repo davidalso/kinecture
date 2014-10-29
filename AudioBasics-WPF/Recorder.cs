@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,7 +13,6 @@ namespace AudioBasics_WPF
 {
     class Recorder
     {
-        double _amountOfTimeToRecord = 100.0;
         public string Filename;
         private readonly KinectSensor kinect;
 
@@ -56,23 +56,27 @@ namespace AudioBasics_WPF
                 return;
             }
 
-            int recordingLength = (int)_amountOfTimeToRecord * 2 * 16000;
             byte[] buffer = new byte[1024];
 
             using (FileStream _fileStream = new FileStream(Filename + ".wav", FileMode.Create))
             {
-                WriteWavHeader(_fileStream, recordingLength);
+                // 100 = seconds
+                // The header has to include the size, which we don't know yet, so we'll
+                // fake it, then go back and overwrite it later (since the size is just an Int32
+                // so it takes up a constant amount of space).
+                WriteWavHeader(_fileStream, 100 * 2 * 1600);
 
                 // HACK: for some reason the normal stream doesn't work with the writer code :(
                 // (it sounds like static, and the stream is unreliable and returns 0, breaking the read loop)
                 var convertStream = new KinectAudioStream(kinectSensor.AudioSource.AudioBeams[0].OpenInputStream());
                 convertStream.SpeechActive = true;
-                //Start capturing audio                               
+                //Start capturing audio      
+                int totalCount = 0;         
                 using (Stream audioStream = convertStream)
                 {
                     Console.WriteLine("RECORDING START");
                     //Simply copy the data from the stream down to the file
-                    int count, totalCount = 0;
+                    int count = 0;
                     while ((count = audioStream.Read(buffer, 0, buffer.Length)) > 0 && /* totalCount < recordingLength &&*/ !isStopped)
                     {
                         _fileStream.Write(buffer, 0, count);
@@ -81,7 +85,19 @@ namespace AudioBasics_WPF
                     _fileStream.Flush();
                     Console.WriteLine("RECORDING STOP");
                 }
-                
+
+                if (_fileStream.CanSeek)
+                {
+                    _fileStream.Seek(0, SeekOrigin.Begin);
+                    // Overwrite the wav header with the actual size
+                    WriteWavHeader(_fileStream, totalCount);
+                    _fileStream.Flush();
+                }
+                else
+                {
+                    Console.WriteLine("Error: can't fix size in wav header");
+                }
+
             }
 
            
