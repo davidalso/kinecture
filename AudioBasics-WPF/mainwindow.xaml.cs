@@ -60,6 +60,8 @@ namespace AudioBasics_WPF
         /// </summary>
         private readonly WriteableBitmap energyBitmap;
 
+        private readonly WriteableBitmap fftBitmap;
+
         /// <summary>
         /// Rectangle representing the entire energy bitmap area. Used when drawing background
         /// for energy visualization.
@@ -206,6 +208,7 @@ namespace AudioBasics_WPF
             }
 
             this.energyBitmap = new WriteableBitmap(EnergyBitmapWidth, EnergyBitmapHeight, 96, 96, PixelFormats.Indexed1, new BitmapPalette(new List<Color> { Colors.White, (Color)this.Resources["KinectPurpleColor"] }));
+            this.fftBitmap = new WriteableBitmap(EnergyBitmapWidth, EnergyBitmapHeight, 96, 96, PixelFormats.Indexed1, new BitmapPalette(new List<Color> { Colors.White, (Color)this.Resources["KinectPurpleColor"] }));
         }
 
         /// <summary>
@@ -223,6 +226,7 @@ namespace AudioBasics_WPF
             }
 
             this.waveDisplay.Source = this.energyBitmap;
+            this.FftDisplayImage.Source = this.fftBitmap;
 
             CompositionTarget.Rendering += this.UpdateEnergy;
 
@@ -393,6 +397,11 @@ namespace AudioBasics_WPF
             else
                 SpeechEllipse.Visibility = Visibility.Hidden;
 
+            if (myKinecture.CustomSpeechDetected)
+                CustomSpeechEllipse.Visibility = Visibility.Visible;
+            else
+                CustomSpeechEllipse.Visibility = Visibility.Hidden;
+
             lock (this.energyLock)
             {
                 // Calculate how many energy samples we need to advance since the last update in order to
@@ -419,45 +428,44 @@ namespace AudioBasics_WPF
                 // clear background of energy visualization area
                 this.energyBitmap.WritePixels(this.fullEnergyRect, this.backgroundPixels, EnergyBitmapWidth, 0);
 
+                this.fftBitmap.WritePixels(this.fullEnergyRect, this.backgroundPixels, EnergyBitmapWidth, 0);
+
                 if (myKinecture.LastFFT != null)
                 {
-                    int width = Math.Min(EnergyBitmapWidth, myKinecture.LastFFT.Length / 2); // ignore 2nd half of FFT because it's redudant
+                    int width = myKinecture.LastFFT.Length / 2; // ignore 2nd half of FFT because it's redudant
                     for (int i = 0; i < width; ++i)
                     {
                         // Each bar has a minimum height of 1 (to get a steady signal down the middle) and a maximum height
                         // equal to the bitmap height.
-                        int barHeight = (int)(Math.Min(EnergyBitmapHeight, myKinecture.LastFFT[i] * 3.0 * EnergyBitmapHeight)); // TODO: max height
-                        
-                        for (int j = 0; j < 5; j++)
+                        int barHeight = (int)(Math.Max(1, Math.Min(EnergyBitmapHeight, myKinecture.LastFFT[i] * 3.0 * EnergyBitmapHeight))); // TODO: max height
+
+                        int barWidth = EnergyBitmapWidth / width;
+                        for (int j = 0; j < barWidth; j++)
                         {
-                            var barRect = new Int32Rect(5*i +j, EnergyBitmapHeight - barHeight, 1, barHeight);
-                            this.energyBitmap.WritePixels(barRect, this.foregroundPixels, 1, 0);
+                            var barRect = new Int32Rect(barWidth * i + j, EnergyBitmapHeight - barHeight, 1, barHeight);
+                            this.fftBitmap.WritePixels(barRect, this.foregroundPixels, 1, 0);
                         }
                         
                     }
                 }
-                else
+                // Draw each energy sample as a centered vertical bar, where the length of each bar is
+                // proportional to the amount of energy it represents.
+                // Time advances from left to right, with current time represented by the rightmost bar.
+                int baseIndex = (this.energyRefreshIndex + this.energy.Length - EnergyBitmapWidth) % this.energy.Length;
+                for (int i = 0; i < EnergyBitmapWidth; ++i)
                 {
-                    // Draw each energy sample as a centered vertical bar, where the length of each bar is
-                    // proportional to the amount of energy it represents.
-                    // Time advances from left to right, with current time represented by the rightmost bar.
-                    int baseIndex = (this.energyRefreshIndex + this.energy.Length - EnergyBitmapWidth) % this.energy.Length;
-                    for (int i = 0; i < EnergyBitmapWidth; ++i)
-                    {
-                        const int HalfImageHeight = EnergyBitmapHeight / 2;
+                    const int HalfImageHeight = EnergyBitmapHeight / 2;
 
-                        // Each bar has a minimum height of 1 (to get a steady signal down the middle) and a maximum height
-                        // equal to the bitmap height.
-                        int barHeight = (int)Math.Max(1.0, this.energy[(baseIndex + i) % this.energy.Length] * EnergyBitmapHeight);
+                    // Each bar has a minimum height of 1 (to get a steady signal down the middle) and a maximum height
+                    // equal to the bitmap height.
+                    int barHeight = (int)Math.Max(1.0, this.energy[(baseIndex + i) % this.energy.Length] * EnergyBitmapHeight);
 
-                        // Center bar vertically on image
-                        var barRect = new Int32Rect(i, HalfImageHeight - (barHeight / 2), 1, barHeight);
+                    // Center bar vertically on image
+                    var barRect = new Int32Rect(i, HalfImageHeight - (barHeight / 2), 1, barHeight);
 
-                        // Draw bar in foreground color
-                        this.energyBitmap.WritePixels(barRect, this.foregroundPixels, 1, 0);
-                    }
+                    // Draw bar in foreground color
+                    this.energyBitmap.WritePixels(barRect, this.foregroundPixels, 1, 0);
                 }
-
                 
             }
         }

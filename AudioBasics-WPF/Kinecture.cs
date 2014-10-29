@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Timers;
 using Microsoft.Kinect;
 using SoundAnalysis;
@@ -71,6 +72,26 @@ namespace AudioBasics_WPF
             // TODO: can both of these use the same stream?
             this.speech = new Speech(audioStream);
             this.recorder = new Recorder(kinectSensor);
+
+            StartBackground();
+        }
+
+        private bool BackgroundStarted = false;
+        public void StartBackground()
+        {
+            if (BackgroundStarted)
+            {
+                Console.WriteLine("Error: tried to start, but alreayd started");
+                return; 
+            }
+            BackgroundStarted = true;
+
+            // Create a timer with a two second interval.
+            aTimer = new System.Timers.Timer(TIMER_INTERVAL);
+            // Hook up the Elapsed event for the timer. 
+            aTimer.Elapsed += OnTimedEvent;
+            aTimer.Enabled = true;
+            speech.Start();
         }
 
         public void Start(string filename)
@@ -86,15 +107,10 @@ namespace AudioBasics_WPF
             {
                 bins[i] = FREQUENCY_BINS[i] + " - " + FREQUENCY_BINS[i + 1];
             }
-            sw.WriteLine("{0},{1},{2},{3},{4},{5}", "timestamp", "angle", "confidence", "loudness", "speech", string.Join(",", bins));
-            speech.Start();
+            sw.WriteLine("{0},{1},{2},{3},{4},{5}", "timestamp", "angle", "confidence", "loudness", "speech", "CustomSpeech", string.Join(",", bins));
+            
             recorder.Filename = filename;
             recorder.Start();
-            // Create a timer with a two second interval.
-            aTimer = new System.Timers.Timer(TIMER_INTERVAL);
-            // Hook up the Elapsed event for the timer. 
-            aTimer.Elapsed += OnTimedEvent;
-            aTimer.Enabled = true;
         }
 
         public double[] LastFFT { private set; get; }
@@ -104,10 +120,11 @@ namespace AudioBasics_WPF
             return angle * 180.0 / Math.PI;
         }
 
+        public bool CustomSpeechDetected;
         private void OnTimedEvent(Object source, ElapsedEventArgs e)
         {
-            if (!Started)
-                return; // in case of race conditions
+            if (!BackgroundStarted)
+                return;
 
             var beam = this.kinectSensor.AudioSource.AudioBeams[0];
             var timestamp = GetTimestamp(e.SignalTime);
@@ -120,7 +137,13 @@ namespace AudioBasics_WPF
                 bins[i] = AverageAmplitudeForFrequencyRange(spectr, FREQUENCY_BINS[i], FREQUENCY_BINS[i + 1]);
             }
 
-            Console.WriteLine(loudness);
+            CustomSpeechDetected = bins[0] > 0.0001 && bins[1] > 0.0001 && bins[2] < 0.0001 && bins[2] < 0.0001;
+            //Console.WriteLine(string.Join(",", bins[0] > 0.0001 , bins[1] > 0.0001 , bins[2] < 0.001 , bins[2] < 0.001));
+            //Console.WriteLine(speechDetected);
+            //Console.WriteLine(string.Join(",", bins.Select(i => i.ToString("0.0000"))));
+
+            if (!Started)
+                return; // in case of race conditions
 
             double outputAngle = RadianToDegree(beam.BeamAngle);
             if (loudness < SILENCE_THRESHOLD)
@@ -128,12 +151,13 @@ namespace AudioBasics_WPF
 
             // TODO: clean this up
             sw.WriteLine(
-                "{0},{1},{2},{3},{4},{5}",
+                "{0},{1},{2},{3},{4},{5},{6}",
                 timestamp,
                 outputAngle,
                 beam.BeamAngleConfidence,
                 loudness,
                 Convert.ToInt32(speech.CurrentlySpeaking),
+                Convert.ToInt32(CustomSpeechDetected),
                 string.Join(",", bins)
                 );
         }
@@ -142,17 +166,18 @@ namespace AudioBasics_WPF
         private float loudness = 0.0F;
         private int test = 0;
 
-        private readonly int[] FREQUENCY_BINS = new int[]
+        private readonly int[] FREQUENCY_BINS = 
         {
             0,
             300,
             1000,
-            2000
+            2000,
+            9999
         };
 
         public void OnFrame(AudioBeamFrameList frameList)
         {
-            if (!Started)
+            if (!BackgroundStarted)
                 return;
 
             // Only one audio beam is supported. Get the sub frame list for this beam
@@ -208,8 +233,8 @@ namespace AudioBasics_WPF
 
             Started = false;
             recorder.Stop();
-            speech.Stop();
-            aTimer.Dispose();
+            //speech.Stop();
+            //aTimer.Dispose();
             sw.Flush();
             sw.Close();
         }

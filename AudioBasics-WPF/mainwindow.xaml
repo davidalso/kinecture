@@ -15,6 +15,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -77,13 +78,20 @@
                 <Path Data="M 0.7720,0.2203 L 0.87,0.2203 L 0.87,0.0353 L 0.85,0.0353" StrokeThickness="0.001" Stroke="LightGray"/>
             </Canvas>
         </Viewbox>
-        <Grid Grid.Row="2">
+        <Viewbox Grid.Row="2" Stretch="Uniform">
+            <Image Width="0.74" Height="0.185" x:Name="FftDisplayImage" VerticalAlignment="Top" HorizontalAlignment="Left">
+               
+            </Image>
+        </Viewbox>
+        <Grid Grid.Row="3">
             <Button Content="Start" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75"
                     Name="StartButton" Click="Start_Click"/>
             <Ellipse Width="25" Height="25" Fill="Red" Name="SpeechEllipse" />
             <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Speech" VerticalAlignment="Top" Margin="404,4,0,0"/>
+            <Ellipse Width="25" Height="25" Fill="Blue" Name="CustomSpeechEllipse" Margin="533,0,214,0" />
+
         </Grid>
-        <Grid Grid.Row="3">
+        <Grid Grid.Row="4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="2*"/>
@@ -93,7 +101,7 @@
             <TextBox Grid.Column="1" Name="beamAngleText" FontSize="14" FontFamily="Segoe" HorizontalAlignment="Center" IsReadOnly="True" BorderThickness="0">Beam Angle = 0 deg.</TextBox>
             <TextBox Grid.Column="2" Name="beamConfidenceText" FontSize="14" FontFamily="Segoe" HorizontalAlignment="Center" IsReadOnly="True" BorderThickness="0">Beam Angle Confidence = 0.00</TextBox>
         </Grid>
-        <StatusBar Grid.Row="4" Height="23" HorizontalAlignment="Stretch" Name="statusBar" VerticalAlignment="Bottom" Margin="0 10 0 10" Background="White" Foreground="{StaticResource MediumGreyBrush}">
+        <StatusBar Grid.Row="5" Height="23" HorizontalAlignment="Stretch" Name="statusBar" VerticalAlignment="Bottom" Margin="0 10 0 10" Background="White" Foreground="{StaticResource MediumGreyBrush}">
             <StatusBarItem Padding="0">
                 <TextBlock Name="statusBarText"></TextBlock>
             </StatusBarItem>
