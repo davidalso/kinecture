@@ -419,8 +419,6 @@ namespace AudioBasics_WPF
                 // clear background of energy visualization area
                 this.energyBitmap.WritePixels(this.fullEnergyRect, this.backgroundPixels, EnergyBitmapWidth, 0);
 
-
-
                 if (myKinecture.LastFFT != null)
                 {
                     int width = Math.Min(EnergyBitmapWidth, myKinecture.LastFFT.Length / 2); // ignore 2nd half of FFT because it's redudant

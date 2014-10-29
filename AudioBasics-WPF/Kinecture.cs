@@ -30,6 +30,7 @@ namespace AudioBasics_WPF
         private readonly double[] audioDoubleBuffer = null;
 
         private const int TIMER_INTERVAL = 50; // milliseconds
+        private const float SILENCE_THRESHOLD = 0.001f; // values below this are silence
 
         private static string GetTimestamp(DateTime d)
         {
@@ -119,11 +120,17 @@ namespace AudioBasics_WPF
                 bins[i] = AverageAmplitudeForFrequencyRange(spectr, FREQUENCY_BINS[i], FREQUENCY_BINS[i + 1]);
             }
 
+            Console.WriteLine(loudness);
+
+            double outputAngle = RadianToDegree(beam.BeamAngle);
+            if (loudness < SILENCE_THRESHOLD)
+                outputAngle = 180;
+
             // TODO: clean this up
             sw.WriteLine(
                 "{0},{1},{2},{3},{4},{5}",
                 timestamp,
-                RadianToDegree(beam.BeamAngle),
+                outputAngle,
                 beam.BeamAngleConfidence,
                 loudness,
                 Convert.ToInt32(speech.CurrentlySpeaking),
@@ -152,6 +159,8 @@ namespace AudioBasics_WPF
             IReadOnlyList<AudioBeamSubFrame> subFrameList = frameList[0].SubFrames;
             // Loop over all sub frames, extract audio buffer and beam information
             // TODO: just do last?
+
+            loudness = 0.0f;
             foreach (AudioBeamSubFrame subFrame in subFrameList)
             {
                 // Process audio buffer
