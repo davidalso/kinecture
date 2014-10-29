@@ -41,7 +41,7 @@ namespace AudioBasics_WPF
             return GetTimestamp(DateTime.Now);
         }
 
-        private readonly Speech speech;
+        public readonly Speech speech;
         private readonly Recorder recorder;
         private Timer aTimer;
         public bool Started { private set; get; }

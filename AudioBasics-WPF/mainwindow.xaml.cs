@@ -388,6 +388,11 @@ namespace AudioBasics_WPF
         /// <param name="e">event arguments.</param>
         private void UpdateEnergy(object sender, EventArgs e)
         {
+            if (myKinecture.speech.CurrentlySpeaking)
+                SpeechEllipse.Visibility = Visibility.Visible;
+            else
+                SpeechEllipse.Visibility = Visibility.Hidden;
+
             lock (this.energyLock)
             {
                 // Calculate how many energy samples we need to advance since the last update in order to
