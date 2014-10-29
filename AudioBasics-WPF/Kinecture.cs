@@ -107,7 +107,16 @@ namespace AudioBasics_WPF
             {
                 bins[i] = FREQUENCY_BINS[i] + " - " + FREQUENCY_BINS[i + 1];
             }
-            sw.WriteLine("{0},{1},{2},{3},{4},{5}", "timestamp", "angle", "confidence", "loudness", "speech", "CustomSpeech", string.Join(",", bins));
+            sw.WriteLine(
+                "{0},{1},{2},{3},{4},{5},{6}", 
+                "timestamp", 
+                "angle", 
+                "confidence",
+                "loudness", 
+                "speech", 
+                "CustomSpeech", 
+                string.Join(",", bins)
+            );
             
             recorder.Filename = filename;
             recorder.Start();
