@@ -98,6 +98,11 @@ namespace AudioBasics_WPF
 
         public double[] LastFFT { private set; get; }
 
+        private double RadianToDegree(double angle)
+        {
+            return angle * 180.0 / Math.PI;
+        }
+
         private void OnTimedEvent(Object source, ElapsedEventArgs e)
         {
             if (!Started)
@@ -118,7 +123,7 @@ namespace AudioBasics_WPF
             sw.WriteLine(
                 "{0},{1},{2},{3},{4},{5}",
                 timestamp,
-                beam.BeamAngle,
+                RadianToDegree(beam.BeamAngle),
                 beam.BeamAngleConfidence,
                 loudness,
                 Convert.ToInt32(speech.CurrentlySpeaking),
