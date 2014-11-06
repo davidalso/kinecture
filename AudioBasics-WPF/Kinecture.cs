@@ -112,13 +112,14 @@ namespace AudioBasics_WPF
                 bins[i] = FREQUENCY_BINS[i] + " - " + FREQUENCY_BINS[i + 1];
             }
             sw.WriteLine(
-                "{0},{1},{2},{3},{4},{5},{6}", 
+                "{0},{1},{2},{3},{4},{5},{6},{7}", 
                 "timestamp", 
                 "angle", 
                 "confidence",
                 "loudness", 
                 "speech", 
                 "CustomSpeech", 
+                "silence",
                 string.Join(",", bins)
             );
             
@@ -142,7 +143,6 @@ namespace AudioBasics_WPF
             var beam = this.kinectSensor.AudioSource.AudioBeams[0];
             var timestamp = GetTimestamp(e.SignalTime);
 
-
             double[] spectr = FftAlgorithm.Calculate(audioDoubleBuffer);
             LastFFT = spectr;
             double[] bins = new double[FREQUENCY_BINS.Length - 1];
@@ -156,26 +156,52 @@ namespace AudioBasics_WPF
             //Console.WriteLine(speechDetected);
             //Console.WriteLine(string.Join(",", bins.Select(i => i.ToString("0.0000"))));
 
-            double outputAngle = RadianToDegree(beam.BeamAngle);
-            dataPublisher.Angle = (float)outputAngle;
+            double angleInDegrees = RadianToDegree(beam.BeamAngle);
+            double outputAngle = angleInDegrees;
             if (loudness < SILENCE_THRESHOLD)
                 outputAngle = 180;
-            
+
+            int width = LastFFT.Length / 2; // ignore 2nd half of FFT because it's redudant
+            bool silence = true;
+            for (int i = 0; i < width; ++i)
+            {
+                // Each bar has a minimum height of 1 (to get a steady signal down the middle) and a maximum height
+                // equal to the bitmap height.
+                var f = Math.Max(0, (Math.Log10(LastFFT[i]) + 3)/10.0);
+                if (f > 0)
+                {
+                    silence = false;
+                    break;
+                }
+            }
+
+            dataPublisher.CurrentDataSnapshot = new Dictionary<string, object>()
+            {
+                {"timestamp", timestamp},
+                {"angle", angleInDegrees},
+                {"confidence", beam.BeamAngleConfidence},
+                {"loudness", loudness},
+                {"speech", speech.CurrentlySpeaking},
+                {"custom_speech", CustomSpeechDetected},
+                {"silence", silence},
+                {"bins", bins}
+            };
 
             if (!Started)
                 return; // in case of race conditions
 
             // TODO: clean this up
             sw.WriteLine(
-                "{0},{1},{2},{3},{4},{5},{6}",
+                "{0},{1},{2},{3},{4},{5},{6},{7}",
                 timestamp,
                 outputAngle,
                 beam.BeamAngleConfidence,
                 loudness,
                 Convert.ToInt32(speech.CurrentlySpeaking),
                 Convert.ToInt32(CustomSpeechDetected),
-                string.Join(",", bins)
-                );
+                string.Join(",", bins),
+                silence
+            );
         }
 
         // TODO: are there any threading issues?

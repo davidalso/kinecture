@@ -17,7 +17,7 @@ namespace AudioBasics_WPF
     {
         private Timer aTimer;
 
-        public float Angle;
+        public IDictionary<string, object> CurrentDataSnapshot = new Dictionary<string, object>();
 
         public DataPublisher()
         {
@@ -58,6 +58,7 @@ namespace AudioBasics_WPF
                     query[queryPair.Key] = JsonConvert.SerializeObject(queryPair.Value);
             }
             builder.Query = query.ToString();
+            Console.WriteLine(builder.ToString());
             WebRequest request = WebRequest.Create(builder.ToString());
 
             var response = request.GetResponse();
@@ -69,11 +70,8 @@ namespace AudioBasics_WPF
 
         private void OnTimedEvent(Object source, ElapsedEventArgs e)
         {
-            DoWebRequest("http://gregfoo.meteor.com/kinect", new Dictionary<string, object>()
-            {
-                {"name", Environment.MachineName},
-                {"angle", Angle}
-            });
+            CurrentDataSnapshot["name"] = Environment.MachineName;
+            DoWebRequest("http://gregfoo.meteor.com/kinect", CurrentDataSnapshot);
         }
     }
 }
