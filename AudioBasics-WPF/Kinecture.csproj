@@ -46,9 +46,34 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\Program Files (x86)\Microsoft SDKs\Speech\v11.0\Assembly\Microsoft.Speech.dll</HintPath>
     </Reference>
+    <Reference Include="Net.DDP.Client, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libraries\Net.DDP.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="Net.DDP.SignalR, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libraries\Net.DDP.SignalR.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libraries\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="SignalR, Version=0.5.1.10822, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libraries\SignalR.dll</HintPath>
+    </Reference>
+    <Reference Include="SignalR.Hosting.Common, Version=0.5.1.10822, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libraries\SignalR.Hosting.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="SignalR.Hosting.Self, Version=0.5.1.10822, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libraries\SignalR.Hosting.Self.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Speech" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -57,6 +82,10 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WebSocket4Net, Version=0.8.0.0, Culture=neutral, PublicKeyToken=eb4e154b696bf72a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libraries\WebSocket4Net.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
@@ -68,6 +97,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ComplexNumber.cs" />
+    <Compile Include="DataPublisher.cs" />
     <Compile Include="FftAlgorithm.cs" />
     <Compile Include="Recorder.cs" />
     <Compile Include="Speech.cs" />
@@ -123,6 +153,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Status.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Libraries\Newtonsoft.Json.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

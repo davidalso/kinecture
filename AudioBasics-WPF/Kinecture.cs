@@ -50,8 +50,11 @@ namespace AudioBasics_WPF
 
         private readonly int sampleRate;
 
+        private readonly DataPublisher dataPublisher;
+
         public Kinecture(KinectSensor kinectSensor)
         {
+            dataPublisher = new DataPublisher();
             Started = false;
             this.kinectSensor = kinectSensor;
             sampleRate = (int) (kinectSensor.AudioSource.SubFrameLengthInBytes/
@@ -81,7 +84,7 @@ namespace AudioBasics_WPF
         {
             if (BackgroundStarted)
             {
-                Console.WriteLine("Error: tried to start, but alreayd started");
+                Console.WriteLine("Error: tried to start, but already started");
                 return; 
             }
             BackgroundStarted = true;
@@ -92,6 +95,7 @@ namespace AudioBasics_WPF
             aTimer.Elapsed += OnTimedEvent;
             aTimer.Enabled = true;
             speech.Start();
+            dataPublisher.Start();
         }
 
         public void Start(string filename)
@@ -138,6 +142,7 @@ namespace AudioBasics_WPF
             var beam = this.kinectSensor.AudioSource.AudioBeams[0];
             var timestamp = GetTimestamp(e.SignalTime);
 
+
             double[] spectr = FftAlgorithm.Calculate(audioDoubleBuffer);
             LastFFT = spectr;
             double[] bins = new double[FREQUENCY_BINS.Length - 1];
@@ -151,12 +156,14 @@ namespace AudioBasics_WPF
             //Console.WriteLine(speechDetected);
             //Console.WriteLine(string.Join(",", bins.Select(i => i.ToString("0.0000"))));
 
-            if (!Started)
-                return; // in case of race conditions
-
             double outputAngle = RadianToDegree(beam.BeamAngle);
+            dataPublisher.Angle = (float)outputAngle;
             if (loudness < SILENCE_THRESHOLD)
                 outputAngle = 180;
+            
+
+            if (!Started)
+                return; // in case of race conditions
 
             // TODO: clean this up
             sw.WriteLine(
@@ -242,6 +249,7 @@ namespace AudioBasics_WPF
 
             Started = false;
             recorder.Stop();
+            dataPublisher.Stop();
             //speech.Stop();
             //aTimer.Dispose();
             sw.Flush();
