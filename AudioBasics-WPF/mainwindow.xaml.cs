@@ -437,7 +437,8 @@ namespace AudioBasics_WPF
                     {
                         // Each bar has a minimum height of 1 (to get a steady signal down the middle) and a maximum height
                         // equal to the bitmap height.
-                        int barHeight = (int)(Math.Max(1, Math.Min(EnergyBitmapHeight, myKinecture.LastFFT[i] * 3.0 * EnergyBitmapHeight))); // TODO: max height
+                        var f = Math.Max(0, (Math.Log10(myKinecture.LastFFT[i]) + 3)/10.0);
+                        int barHeight = (int)(Math.Max(1, Math.Min(EnergyBitmapHeight,f * EnergyBitmapHeight))); // TODO: max height
 
                         int barWidth = EnergyBitmapWidth / width;
                         for (int j = 0; j < barWidth; j++)
