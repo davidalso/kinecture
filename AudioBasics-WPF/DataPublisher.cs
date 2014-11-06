@@ -7,9 +7,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
-using Net.DDP.Client;
 using Newtonsoft.Json;
-using SignalR.Hosting.Common;
 
 namespace AudioBasics_WPF
 {
