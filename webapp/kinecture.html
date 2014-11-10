@@ -1,0 +1,55 @@
+<!-- simple-todos.html -->
+<head>
+  <title>Kinecture</title>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>Kinect Angles</h1>
+    </header>
+
+    <button type="button" class="btn btn-danger" id="deleteEverything">Delete Everything</button>
+
+    <table class="table">
+      <tr>
+        <th>name</th>
+        <th>timestamp</th>
+        <th>angle</th>
+        <th>confidence</th>
+        <th>loudness</th>
+        <th>speech</th>
+        <th>custom_speech</th>
+        <th>silence</th>
+        <th>bins</th>
+      </tr>
+      {{#each kinects}}
+        {{> kinect}}
+      {{/each}}
+    </table>
+  </div>
+</body>
+
+<template name="task">
+  <li class="{{#if checked}}checked{{/if}}">
+    <button class="delete">&times;</button>
+
+    <input type="checkbox" checked="{{checked}}" class="toggle-checked" />
+
+    <span class="text">{{text}}</span>
+  </li>
+</template>
+
+<template name="kinect">
+  <tr>
+    <td>{{name}}</td>
+    <td>{{timestamp}}</td>
+    <td>{{angle}}</td>
+    <td>{{confidence}}</td>
+    <td>{{loudness}}</td>
+    <td>{{speech}}</td>
+    <td>{{custom_speech}}</td>
+    <td>{{silence}}</td>
+    <td>{{bins}}</td>
+  </tr>
+</template>
