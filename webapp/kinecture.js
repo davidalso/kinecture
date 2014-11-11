@@ -1,5 +1,48 @@
 Kinects = new Mongo.Collection("kinects");
 
+Schemas.Kinect = new SimpleSchema({
+    dx: {
+      type: Number,
+      min: 0
+    },
+    dy: {
+      type: Number,
+      min: 0
+    },
+    dtheta: {
+      type: Number,
+      min: 0,
+    },
+    angle: {
+      type: Number,
+      min: -180,
+      max: 180
+    }
+    confidence: {
+      type: Number,
+      min: 0,
+      max: 1
+    },
+    loudness: {
+        type: Number,
+        max: 1
+    },
+    speech: {
+      type: boolean
+    },
+    custom_speech: {
+      type: boolean
+    },
+    silence: {
+      type: boolean
+    },
+    bins: {
+      type: [Number]
+    }
+});
+
+Kinects.attachSchema(Schemas.Kinect);
+
 if (Meteor.isClient) {
   // This code only runs on the client
   Template.body.helpers({
@@ -25,6 +68,16 @@ if (Meteor.isClient) {
     "click .setright": function() {
       Session.set("right", this._id);
     },
+
+    "change .dx": function() {
+      Kinects.update(this._id, {$set: {dx: event.target.valueAsNumber}});
+    },
+    "change .dy": function() {
+      Kinects.update(this._id, {$set: {dy: event.target.valueAsNumber}});
+    },
+    "change .dtheta": function() {
+      Kinects.update(this._id, {$set: {dtheta: event.target.valueAsNumber}});
+    }
   });
 
   Template.body.events({
@@ -103,13 +156,12 @@ if (Meteor.isClient) {
       .attr("transform", "translate(" + padding + ",0)");
 
     Deps.autorun(function(){
-      var dataset = [{_id: 1, x: 2, y: 2}, {_id: 2, x: 8, y :2}];
-
-      //= Points.find({},{fields:{x:1,y:1}}).fetch();
+      var query = {_id: {$in: [Session.get("left"), Session.get("right")]}};
+      var dataset = Kinects.find(query).fetch();
 
       //Update scale domains
-      xScale.domain([0, d3.max(dataset, function(d) { return d.x; })]);
-      yScale.domain([0, d3.max(dataset, function(d) { return d.y; })]);
+      xScale.domain([0, d3.max(dataset, function(d) { return d.dx + 2; })]);
+      yScale.domain([0, d3.max(dataset, function(d) { return d.dy + 2; })]);
 
       //Update X axis
       svg.select(".x.axis")
@@ -124,38 +176,52 @@ if (Meteor.isClient) {
         .call(yAxis);
 
 
-      var circles = svg
-        .selectAll("circle")
+      var lines = svg
+        .selectAll("line")
         .data(dataset, key);
 
+      var length = 300;
+
       //Create
-      circles
+      lines
         .enter()
-        .append("circle")
-        .attr("cx", function(d) {
-          return xScale(d.x);
+        .append("line")
+        .attr("x1", function(d) {
+          return xScale(d.dx);
         })
-        .attr("cy", function(d) {
-          return yScale(d.y);
+        .attr("y1", function(d) {
+          return yScale(d.dy);
         })
-        .attr("r", 2);
+        .attr("x2", function(d) {
+          return xScale(d.dx) + length * Math.cos((d.dtheta + Number(d.angle)) * Math.PI / 180.0);
+        })
+        .attr("y2", function(d) {
+          return yScale(d.dy) - length * Math.sin((d.dtheta + Number(d.angle)) * Math.PI / 180.0);
+        }).
+        attr("stroke", "black");
 
       //Update
-      circles
+      lines
         .transition()
-        .duration(1000)
-        .attr("cx", function(d) {
-          return xScale(d.x);
+        .duration(100)
+        .attr("x1", function(d) {
+          return xScale(d.dx);
         })
-        .attr("cy", function(d) {
-          return yScale(d.y);
+        .attr("y1", function(d) {
+          return yScale(d.dy);
+        })
+        .attr("x2", function(d) {
+          return xScale(d.dx) + length * Math.cos((d.dtheta + Number(d.angle)) * Math.PI / 180.0);
+        })
+        .attr("y2", function(d) {
+          return yScale(d.dy) - length * Math.sin((d.dtheta + Number(d.angle)) * Math.PI / 180.0);
         });
 
       //Remove
-      circles
+      lines
         .exit()
         .remove();
-    });
+      });
 
   };
 }
