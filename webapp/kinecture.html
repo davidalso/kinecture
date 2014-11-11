@@ -11,9 +11,13 @@
 
     <button type="button" class="btn btn-danger" id="deleteEverything">Delete Everything</button>
 
+    <button type="button" class="btn" id="randomize">Randomize kinect data</button>
+
     <table class="table">
       <tr>
         <th>name</th>
+        <th>left</th>
+        <th>right</th>
         <th>timestamp</th>
         <th>angle</th>
         <th>confidence</th>
@@ -27,22 +31,20 @@
         {{> kinect}}
       {{/each}}
     </table>
+
+    {{> scatterPlot}}
   </div>
 </body>
-
-<template name="task">
-  <li class="{{#if checked}}checked{{/if}}">
-    <button class="delete">&times;</button>
-
-    <input type="checkbox" checked="{{checked}}" class="toggle-checked" />
-
-    <span class="text">{{text}}</span>
-  </li>
-</template>
 
 <template name="kinect">
   <tr>
     <td>{{name}}</td>
+    <td>
+      <button type="button" class="btn setleft {{#if left}}active{{/if}}">Left</button>
+    </td>
+    <td>
+      <button type="button" class="btn setright {{#if right}}active{{/if}}">Right</button>
+    </td>
     <td>{{timestamp}}</td>
     <td>{{angle}}</td>
     <td>{{confidence}}</td>
@@ -52,4 +54,13 @@
     <td>{{silence}}</td>
     <td>{{bins}}</td>
   </tr>
+</template>
+
+<template name="scatterPlot">
+  <h4>Scatter Plot - <small><a href="http://chimera.labs.oreilly.com/books/1230000000345/ch09.html#_updating_axes">View Original</a></small></h4>
+    <svg id="scatterPlot">
+    </svg>
+    <input type="button" id="add" value="Add a Value" />
+    <input type="button" id="remove" value="Remove a Value" />
+    <input type="button" id="randomize" value="Randomize Values" />
 </template>

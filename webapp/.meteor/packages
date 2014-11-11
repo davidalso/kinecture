@@ -8,4 +8,6 @@ autopublish
 insecure
 cfs:http-methods
 bootstrap
+d3
+less
 
