@@ -11,4 +11,6 @@ bootstrap
 d3
 less
 aldeed:collection2
+aldeed:simple-schema
+underscore
 

@@ -30,7 +30,7 @@ namespace AudioBasics_WPF
 
              // Create a timer with a two second interval.
             aTimer = new Timer(500);
-            // Hook up the Elapsed event for the timer. 
+            // Hook up the Elapsed event for the timer.
             aTimer.Elapsed += OnTimedEvent;
         }
 
@@ -50,10 +50,7 @@ namespace AudioBasics_WPF
             var query = System.Web.HttpUtility.ParseQueryString(builder.Query);
             foreach (var queryPair in queryParams)
             {
-                if (queryPair.Value is string)
-                    query[queryPair.Key] = (string) queryPair.Value;
-                else
-                    query[queryPair.Key] = JsonConvert.SerializeObject(queryPair.Value);
+                query[queryPair.Key] = JsonConvert.SerializeObject(queryPair.Value);
             }
             builder.Query = query.ToString();
             Console.WriteLine(builder.ToString());
@@ -69,7 +66,7 @@ namespace AudioBasics_WPF
         private void OnTimedEvent(Object source, ElapsedEventArgs e)
         {
             CurrentDataSnapshot["name"] = Environment.MachineName;
-            DoWebRequest("http://gregfoo.meteor.com/kinect", CurrentDataSnapshot);
+            DoWebRequest("http://kinecture.meteor.com/kinect", CurrentDataSnapshot);
         }
     }
 }

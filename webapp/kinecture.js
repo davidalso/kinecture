@@ -1,43 +1,64 @@
 Kinects = new Mongo.Collection("kinects");
 
+var Schemas = {};
+
+
 Schemas.Kinect = new SimpleSchema({
+    name: {
+      type: String,
+      min: 0,
+      unique: false
+    },
     dx: {
       type: Number,
-      min: 0
+      min: 0,
+      decimal: true,
+      defaultValue: 0,
+      optional: true
     },
     dy: {
       type: Number,
-      min: 0
+      min: 0,
+      decimal: true,
+      defaultValue: 0,
+      optional: true
     },
     dtheta: {
       type: Number,
       min: 0,
+      decimal: true,
+      defaultValue: 12,
+      optional: true
     },
     angle: {
       type: Number,
       min: -180,
-      max: 180
-    }
+      max: 180,
+      decimal: true
+    },
     confidence: {
       type: Number,
-      min: 0,
-      max: 1
+      min: 0.0,
+      max: 1.0,
+      decimal: true
     },
     loudness: {
         type: Number,
-        max: 1
+        max: 1,
+        decimal: true
     },
     speech: {
-      type: boolean
+      type: Boolean
     },
     custom_speech: {
-      type: boolean
+      type: Boolean
     },
     silence: {
-      type: boolean
+      type: Boolean
     },
     bins: {
-      type: [Number]
+      type: [Number],
+      decimal: true
     }
 });
 
@@ -229,10 +250,15 @@ if (Meteor.isClient) {
 if (Meteor.isServer) {
   HTTP.methods({
     '/kinect': function() {
+      var stuff = this.query;
+
+      stuff = _.object(_.map(stuff, function (val, key) {
+          return [key, JSON.parse(val)];
+      }));
 
       Kinects.update(
-        {name: this.query.name},
-        {$set: this.query},
+        {name: stuff.name},
+        {$set: stuff},
         {upsert: true}
       );
 
