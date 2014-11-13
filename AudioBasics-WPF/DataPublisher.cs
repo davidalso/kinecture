@@ -53,14 +53,23 @@ namespace AudioBasics_WPF
                 query[queryPair.Key] = JsonConvert.SerializeObject(queryPair.Value);
             }
             builder.Query = query.ToString();
-            Console.WriteLine(builder.ToString());
+            //Console.WriteLine(builder.ToString());
             WebRequest request = WebRequest.Create(builder.ToString());
 
-            var response = request.GetResponse();
-            //StreamReader reader = new StreamReader(response.GetResponseStream());
-            //string responseText = reader.ReadToEnd();
-            //reader.Close();
-            response.Close();
+            try
+            {
+
+                var response = request.GetResponse();
+                //StreamReader reader = new StreamReader(response.GetResponseStream());
+                //string responseText = reader.ReadToEnd();
+                //reader.Close();
+                response.Close();
+            }
+            catch (WebException e)
+            {
+                Console.WriteLine("WebException ignored: " + e.ToString());
+                //throw e;
+            }
         }
 
         private void OnTimedEvent(Object source, ElapsedEventArgs e)
