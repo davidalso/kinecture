@@ -78,6 +78,12 @@ if (Meteor.isClient) {
     },
     right: function() {
       return Session.get("right") == this._id;
+    },
+    fixed: function(v) {
+      return v.toFixed(2);
+    },
+    bins_fixed: function() {
+      return _.map(this.bins, function(num) { return num.toFixed(2);});
     }
   });
 
