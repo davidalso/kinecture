@@ -64,6 +64,31 @@ Schemas.Kinect = new SimpleSchema({
 
 Kinects.attachSchema(Schemas.Kinect);
 
+function lineIntersection(line1StartX, line1StartY, line1EndX, line1EndY, line2StartX, line2StartY, line2EndX, line2EndY) {
+  // http://jsfiddle.net/justin_c_rounds/Gd2S2/light/
+  // if the lines intersect, the result contains the x and y of the intersection (treating the lines as infinite) and booleans for whether line segment 1 or line segment 2 contain the point
+  var denominator, a, b, numerator1, numerator2, result = {
+      x: null,
+      y: null
+  };
+  denominator = ((line2EndY - line2StartY) * (line1EndX - line1StartX)) - ((line2EndX - line2StartX) * (line1EndY - line1StartY));
+  if (denominator == 0) {
+      return false;
+  }
+  a = line1StartY - line2StartY;
+  b = line1StartX - line2StartX;
+  numerator1 = ((line2EndX - line2StartX) * a) - ((line2EndY - line2StartY) * b);
+  numerator2 = ((line1EndX - line1StartX) * a) - ((line1EndY - line1StartY) * b);
+  a = numerator1 / denominator;
+  b = numerator2 / denominator;
+
+  // if we cast these lines infinitely in both directions, they intersect here:
+  result.x = line1StartX + (a * (line1EndX - line1StartX));
+  result.y = line1StartY + (a * (line1EndY - line1StartY));
+
+  return result;
+};
+
 if (Meteor.isClient) {
   // This code only runs on the client
   Template.body.helpers({
@@ -107,6 +132,10 @@ if (Meteor.isClient) {
     }
   });
 
+  Session.set("roomWidth", 10);
+  Session.set("roomLength", 10);
+  sessionBind(Template.body);
+
   Template.body.events({
     "click #deleteEverything": function() {
       Meteor.call("deleteEverything");
@@ -125,7 +154,7 @@ if (Meteor.isClient) {
                 angle: Math.random() * 100.0 - 50.0,
                 timestamp: new Date(),
                 confidence: Math.random(),
-                loudness: Math.random(),
+                loudness: Math.random() / 10,
                 speech: !silence && Math.random() < 0.5,
                 custom_speech: !silence && Math.random() < 0.5,
                 silence: silence,
@@ -182,66 +211,107 @@ if (Meteor.isClient) {
       .attr("class", "y axis")
       .attr("transform", "translate(" + padding + ",0)");
 
+    svg.append("circle");
+
     Deps.autorun(function(){
       var query = {_id: {$in: [Session.get("left"), Session.get("right")]}};
       var dataset = Kinects.find(query).fetch();
 
+      var length = Math.round(1 + Math.sqrt(Math.pow(Session.get("roomWidth"),2) + Math.pow(Session.get("roomLength"),2)));
+      _.each(dataset, function(element) {
+        if (element._id == Session.get("left")) {
+          element.x = element.dx;
+          element.y = Session.get("roomLength") - element.dy;
+        } else {
+          element.x = Session.get("roomWidth") - element.dx;
+          element.y = Session.get("roomLength") - element.dy;
+        }
+
+        element.x2 = element.x + length * Math.cos((element.dtheta + Number(element.angle)) * Math.PI / 180.0);
+        element.y2 = element.y + length * Math.sin((element.dtheta + Number(element.angle)) * Math.PI / 180.0);
+      });
+
       //Update scale domains
-      xScale.domain([0, d3.max(dataset, function(d) { return d.dx + 2; })]);
-      yScale.domain([0, d3.max(dataset, function(d) { return d.dy + 2; })]);
+      xScale.domain([0, Session.get("roomWidth")]);
+      yScale.domain([0, Session.get("roomLength")]);
 
       //Update X axis
       svg.select(".x.axis")
         .transition()
-        .duration(1000)
+        .duration(100)
         .call(xAxis);
 
       //Update Y axis
       svg.select(".y.axis")
         .transition()
-        .duration(1000)
+        .duration(100)
         .call(yAxis);
 
+      var cx, cy;
+      if (dataset.length >= 2) {
+        var e1 = dataset[0];
+        var e2 = dataset[1];
+
+        var loudness = (e1.loudness + e2.loudness)/2;
+        var loudness_scaled = Math.min(loudness * 500.0, 1.0); // usually loudness <= 0.1
+        var r = loudness_scaled * 20.0 + 5.0;
+
+        var intersect = lineIntersection(e1.x, e1.y, e1.x2, e1.y2, e2.x, e2.y, e2.x2, e2.y2);
+        if (intersect) {
+          svg.select("circle")
+            .attr("cx", function() {
+              return xScale(intersect.x);
+            })
+            .attr("cy", function() {
+              return yScale(intersect.y);
+            })
+            .attr("r", r);
+        }
+      }
 
       var lines = svg
         .selectAll("line")
         .data(dataset, key);
-
-      var length = 300;
 
       //Create
       lines
         .enter()
         .append("line")
         .attr("x1", function(d) {
-          return xScale(d.dx);
+          return xScale(d.x);
         })
         .attr("y1", function(d) {
-          return yScale(d.dy);
+          return yScale(d.y);
         })
         .attr("x2", function(d) {
-          return xScale(d.dx) + length * Math.cos((d.dtheta + Number(d.angle)) * Math.PI / 180.0);
+          return xScale(d.x2);
         })
         .attr("y2", function(d) {
-          return yScale(d.dy) - length * Math.sin((d.dtheta + Number(d.angle)) * Math.PI / 180.0);
-        }).
-        attr("stroke", "black");
+          return yScale(d.y2);
+        })
+        .attr("stroke", "black");
 
       //Update
       lines
         .transition()
         .duration(100)
         .attr("x1", function(d) {
-          return xScale(d.dx);
+          return xScale(d.x);
         })
         .attr("y1", function(d) {
-          return yScale(d.dy);
+          return yScale(d.y);
         })
         .attr("x2", function(d) {
-          return xScale(d.dx) + length * Math.cos((d.dtheta + Number(d.angle)) * Math.PI / 180.0);
+          return xScale(d.x2);
         })
         .attr("y2", function(d) {
-          return yScale(d.dy) - length * Math.sin((d.dtheta + Number(d.angle)) * Math.PI / 180.0);
+          return yScale(d.y2);
+        })
+        .attr("stroke-width", function(d) {
+          return Math.min(5, Math.round(1 + d.loudness * 5.0 * 500.0));
+        })
+        .attr("stroke", function(d) {
+          return d.speech ? "red" : "black";
         });
 
       //Remove

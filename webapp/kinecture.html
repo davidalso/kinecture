@@ -1,4 +1,3 @@
-<!-- simple-todos.html -->
 <head>
   <title>Kinecture</title>
 </head>
@@ -9,9 +8,20 @@
       <h1>Kinect Angles</h1>
     </header>
 
-    <button type="button" class="btn btn-danger" id="deleteEverything" style="display:none">Delete Everything</button>
+    <form class="form-inline" role="form">
+      <button type="button" class="btn btn-danger" id="deleteEverything" style="display:none">Delete Everything</button>
 
-    <button type="button" class="btn" id="randomize">Randomize kinect data</button>
+      <button type="button" class="btn" id="randomize">Randomize kinect data</button>
+
+      <label>
+        Length
+        <input type="number" {{bindSession "roomLength"}}>
+      </label>
+      <label>
+        Width
+        <input type="number" {{bindSession "roomWidth"}}>
+      </label>
+    </form>
 
     <table class="table">
       <tr>
