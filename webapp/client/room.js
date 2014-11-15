@@ -1,5 +1,5 @@
 Template.room.events({
-  "click .length": function() {
+  "change .length": function() {
     Rooms.update(this._id, {$set: {length: event.target.valueAsNumber}});
   },
 
@@ -10,6 +10,6 @@ Template.room.events({
 
 Template.room.helpers({
   defaultRoom: function() {
-    return Rooms.findOne({name: "default"});
+    return getDefaultRoom();
   }
 })

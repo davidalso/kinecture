@@ -45,10 +45,6 @@ Template.graph.rendered = function(){
 
   svg.append("circle");
 
-  //Update scale domains
-  xScale.domain([0, Session.get("roomWidth")]);
-  yScale.domain([0, Session.get("roomLength")]);
-
   //This is the accessor function we talked about above
   var lineFunction = d3.svg.line()
                            .x(function(d) { return xScale(d.x); })
@@ -57,10 +53,19 @@ Template.graph.rendered = function(){
   var closedLineFunction = function(d) { return lineFunction(d) + "Z"; };
 
   Deps.autorun(function(){
+    var defaultRoom = getDefaultRoom();
+    if (defaultRoom == null) {
+      return;
+    } else
+      console.log("yes default room");
+
+    var roomLength = defaultRoom.length;
+    var roomWidth = defaultRoom.width;
+
     var query = {_id: {$in: [Session.get("left"), Session.get("right")]}};
     var dataset = Kinects.find(query).fetch();
 
-    var length = Math.round(1 + Math.sqrt(Math.pow(Session.get("roomWidth"),2) + Math.pow(Session.get("roomLength"),2)));
+    var length = Math.round(1 + Math.sqrt(Math.pow(roomWidth,2) + Math.pow(roomLength,2)));
     _.each(dataset, function(element) {
       var getX = function(offsetAngle) {
         return element.x + length * Math.cos((element.dtheta + Number(element.angle) + offsetAngle) * Math.PI / 180.0);
@@ -72,10 +77,10 @@ Template.graph.rendered = function(){
 
       if (element._id == Session.get("left")) {
         element.x = element.dx;
-        element.y = Session.get("roomLength") - element.dy;
+        element.y = roomLength - element.dy;
       } else {
-        element.x = Session.get("roomWidth") - element.dx;
-        element.y = Session.get("roomLength") - element.dy;
+        element.x = roomWidth - element.dx;
+        element.y = roomLength - element.dy;
       }
 
       element.x2 = getX(0);
@@ -90,8 +95,8 @@ Template.graph.rendered = function(){
     });
 
     //Update scale domains
-    xScale.domain([0, Session.get("roomWidth")]);
-    yScale.domain([0, Session.get("roomLength")]);
+    xScale.domain([0, roomWidth]);
+    yScale.domain([0, roomLength]);
 
     //Update X axis
     svg.select(".x.axis")
@@ -115,6 +120,7 @@ Template.graph.rendered = function(){
       var r = loudness_scaled * 20.0 + 5.0;
 
       var intersect = lineIntersection(e1.x, e1.y, e1.x2, e1.y2, e2.x, e2.y, e2.x2, e2.y2);
+      Session.set("intersection", intersect);
       if (intersect) {
         svg.select("circle")
           .attr("cx", function() {
@@ -125,10 +131,13 @@ Template.graph.rendered = function(){
           })
           .style("visibility", "visible")
           .attr("r", r);
-      } else
+      } else {
         svg.select("circle").style("visibility", "hidden");
-    } else
+      }
+    } else {
       svg.select("circle").style("visibility", "hidden");
+      Session.set("intersection", false);
+    }
 
     var lineFunction = d3.svg.line()
       .x(function(d) { return d.x; })

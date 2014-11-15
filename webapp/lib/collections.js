@@ -88,8 +88,17 @@ Kinects.attachSchema(Schemas.Kinect);
 
 getDefaultRoom = function() {return Rooms.findOne({name: "default"})};
 
-if (Meteor.isServer) {
+createDefaultRoom = function() {
   if (!getDefaultRoom()) {
-    Rooms.insert({name: "default", width: 10, roomLength: 9});
-  }
+    console.log("creating default room");
+    Rooms.insert({name: "default", width: 10, roomLength: 9}, function(e,d) {
+      console.log(e);
+      console.log(d);
+    });
+  } else
+    console.log("default room exists");
+}
+
+if (Meteor.isServer) {
+  createDefaultRoom();
 }

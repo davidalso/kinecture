@@ -29,5 +29,8 @@ lineIntersection = function(line1StartX, line1StartY, line1EndX, line1EndY, line
 Template.body.helpers({
   kinects: function() {
     return Kinects.find({});
+  },
+  intersection: function() {
+    return JSON.stringify(Session.get("intersection"));
   }
 });
