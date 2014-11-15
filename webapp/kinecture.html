@@ -8,6 +8,8 @@
       <h1>Kinect Angles</h1>
     </header>
 
+    {{#if showAdminPanel}}
+    <button type="button" class="btn" id="hideAdminPanel">Hide Admin Panel</button>
     {{> controls}}
 
     <table class="table">
@@ -31,6 +33,9 @@
         {{> kinect}}
       {{/each}}
     </table>
+    {{else}}
+      <button type="button" class="btn" id="showAdminPanel">Show Admin Panel</button>
+    {{/if}}
 
     <div>
       Intersection: {{intersection}}

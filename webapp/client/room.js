@@ -13,3 +13,21 @@ Template.room.helpers({
     return getDefaultRoom();
   }
 })
+
+defaultLeftRight = function () {
+  var left = Session.get("left");
+  var right = Session.get("right");
+  if (left || right)
+    return;
+  console.log("I RUN");
+  var all = Kinects.find().fetch();
+  console.log(all);
+  if (all.length >= 2) {
+    console.log("all");
+    console.log(Session.get("left"));
+    if (!Session.get("left"))
+      Session.set("left", all[0]._id);
+    if (!Session.get("right"))
+      Session.set("right", all[1]._id);
+  }
+}

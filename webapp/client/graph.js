@@ -59,12 +59,29 @@ Template.graph.rendered = function(){
     } else
       console.log("yes default room");
 
+    defaultLeftRight();
+
     var roomLength = defaultRoom.length;
     var roomWidth = defaultRoom.width;
+
+    // w += 50;
+    h = roomLength * w / roomWidth;
+    xScale.range([padding, w - padding * 2]);
+    yScale.range([h - padding, padding]);
+    svg.attr("width", w)
+        .attr("height", h);
+
+    svg.select(".x.axis")
+      .attr("transform", "translate(0," + (h - padding) + ")");
+
+    //Update Y axis
+    svg.select(".y.axis")
+      .attr("transform", "translate(" + padding + ",0)");
 
     var query = {_id: {$in: [Session.get("left"), Session.get("right")]}};
     var dataset = Kinects.find(query).fetch();
 
+    // Make sure the cones are long enough to extend past the graph
     var length = Math.round(1 + Math.sqrt(Math.pow(roomWidth,2) + Math.pow(roomLength,2)));
     _.each(dataset, function(element) {
       var getX = function(offsetAngle) {

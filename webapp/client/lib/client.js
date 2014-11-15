@@ -32,5 +32,17 @@ Template.body.helpers({
   },
   intersection: function() {
     return JSON.stringify(Session.get("intersection"));
+  },
+  showAdminPanel: function() {
+    return Session.get("showAdminPanel");
   }
 });
+
+Template.body.events({
+  "click #showAdminPanel": function() {
+    Session.set("showAdminPanel", true);
+  },
+  "click #hideAdminPanel": function() {
+    Session.set("showAdminPanel", false);
+  }
+})
