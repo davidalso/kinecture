@@ -145,13 +145,14 @@ Template.graph.rendered = function(){
       .interpolate("linear");
 
     var lines = svg
-      .selectAll("path")
+      .selectAll("path.cone")
       .data(dataset, key);
 
     //Create
     lines
       .enter()
       .append("path")
+      .attr("class", "cone")
       .attr("fill", "rgba(0,0,255,0.5)")
       .attr("d", function(d) {
         return closedLineFunction([{x: d.x, y: d.y}, {x: d.x2l, y: d.y2l}, {x: d.x2r, y: d.y2r}]);
