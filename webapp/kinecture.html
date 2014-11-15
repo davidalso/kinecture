@@ -8,20 +8,7 @@
       <h1>Kinect Angles</h1>
     </header>
 
-    <form class="form-inline" role="form">
-      <button type="button" class="btn btn-danger" id="deleteEverything" style="display:none">Delete Everything</button>
-
-      <button type="button" class="btn" id="randomize">Randomize kinect data</button>
-
-      <label>
-        Length
-        <input type="number" {{bindSession "roomLength"}}>
-      </label>
-      <label>
-        Width
-        <input type="number" {{bindSession "roomWidth"}}>
-      </label>
-    </form>
+    {{> controls}}
 
     <table class="table">
       <tr>
@@ -45,9 +32,19 @@
       {{/each}}
     </table>
 
-    {{> scatterPlot}}
+    {{> graph}}
   </div>
 </body>
+
+<template name="controls">
+  <form class="form-inline" role="form">
+      <button type="button" class="btn btn-danger" id="deleteEverything" style="display:none">Delete Everything</button>
+
+      <button type="button" class="btn" id="randomize">Pseudorandomize data</button>
+
+      {{> room}}
+    </form>
+</template>
 
 <template name="kinect">
   <tr>
@@ -78,7 +75,20 @@
   </tr>
 </template>
 
-<template name="scatterPlot">
-  <svg id="scatterPlot">
+<template name="graph">
+  <svg id="graph">
   </svg>
+</template>
+
+<template name="room">
+  {{#with defaultRoom}}
+  <label>
+    Length
+    <input type="number" class="length" value="{{length}}">
+  </label>
+  <label>
+    Width
+    <input type="number" class="width" value="{{width}}">
+  </label>
+  {{/with}}
 </template>

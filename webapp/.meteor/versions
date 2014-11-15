@@ -1,5 +1,5 @@
 aldeed:collection2@2.2.0
-aldeed:simple-schema@1.0.3
+aldeed:simple-schema@1.1.0
 amplify@1.0.0
 application-configuration@1.0.3
 autopublish@1.0.1
@@ -22,7 +22,6 @@ ejson@1.0.4
 fastclick@1.0.1
 follower-livedata@1.0.2
 geojson-utils@1.0.1
-handlebars@1.0.1
 html-tools@1.0.2
 htmljs@1.0.2
 http@1.0.8
@@ -41,7 +40,6 @@ minimongo@1.0.5
 mobile-status-bar@1.0.1
 mongo-livedata@1.0.6
 mongo@1.0.8
-nikhizzle:session-bind@1.0.2
 observe-sequence@1.0.3
 ordered-dict@1.0.1
 random@1.0.1
