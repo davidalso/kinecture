@@ -128,15 +128,24 @@ Template.graph.rendered = function(){
       .call(yAxis);
 
     var cx, cy;
+    console.log("LOUD NOISES!");
     if (dataset.length >= 2) {
       var e1 = dataset[0];
       var e2 = dataset[1];
+
+      console.log("E1:"+e1.silence)
+      console.log("E2:"+e2.silence)
+
+      if(e1.silence && e2.silence){
+        console.log("Everthing is silent"+ new Date());
+      }
 
       var loudness = (e1.loudness + e2.loudness)/2;
       var loudness_scaled = Math.min(loudness * 500.0, 1.0); // usually loudness <= 0.1
       var r = loudness_scaled * 20.0 + 5.0;
 
       var intersect = lineIntersection(e1.x, e1.y, e1.x2, e1.y2, e2.x, e2.y, e2.x2, e2.y2);
+      console.log(intersect);
       Session.set("intersection", intersect);
       if (intersect) {
         svg.select("circle")

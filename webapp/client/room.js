@@ -19,7 +19,7 @@ defaultLeftRight = function () {
   var right = Session.get("right");
   if (left || right)
     return;
-  console.log("I RUN");
+  //console.log("I RUN");
   var all = Kinects.find().fetch();
   console.log(all);
   if (all.length >= 2) {

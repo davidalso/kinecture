@@ -6,6 +6,15 @@ Template.controls.events({
     Meteor.call("deleteEverything");
   },
 
+  "click #vibrate ": function() {
+    if(navigator && navigator.vibrate) {
+      navigator.vibrate(100);
+    }
+    else {
+      console.error("don't support vibration!");
+    }
+  },
+
   "click #randomize": function() {
     var cursor = Kinects.find({});
     if (!cursor.count()) return;
