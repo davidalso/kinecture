@@ -1,8 +1,19 @@
+
+
+  var ta = new Date();
+  var tb = new Date();
+
+  var delay = 0;
+  var delayTotal = 0;
+  var delayAbsTot = 0;
+  var delayCount = 0;
+
 Template.graph.rendered = function(){
   //Width and height
   var w = 500;
   var h = 300;
   var padding = 30;
+
 
   //Create scale functions
   var xScale = d3.scale.linear()
@@ -53,6 +64,7 @@ Template.graph.rendered = function(){
   var closedLineFunction = function(d) { return lineFunction(d) + "Z"; };
 
   Deps.autorun(function(){
+
     var defaultRoom = getDefaultRoom();
     if (defaultRoom == null) {
       return;
@@ -128,13 +140,10 @@ Template.graph.rendered = function(){
       .call(yAxis);
 
     var cx, cy;
-    console.log("LOUD NOISES!");
     if (dataset.length >= 2) {
+
       var e1 = dataset[0];
       var e2 = dataset[1];
-
-      console.log("E1:"+e1.silence)
-      console.log("E2:"+e2.silence)
 
       if(e1.silence && e2.silence){
         console.log("Everthing is silent"+ new Date());
@@ -145,8 +154,24 @@ Template.graph.rendered = function(){
       var r = loudness_scaled * 20.0 + 5.0;
 
       var intersect = lineIntersection(e1.x, e1.y, e1.x2, e1.y2, e2.x, e2.y, e2.x2, e2.y2);
-      console.log(intersect);
+      
       Session.set("intersection", intersect);
+
+      ta = tb;
+      tb = new Date();
+      delay = tb.getMilliseconds() - ta.getMilliseconds();
+      
+      delayTotal += delay;
+      delayAbsTot += Math.abs(delay);
+      delayCount +=1;
+      var delavg = delayTotal / delayCount;
+
+      
+      Session.set("delayframe", delay);
+      Session.set("delayaverage", delavg);
+      Session.set("absdelay", delayAbsTot/delayCount);
+
+      
       if (intersect) {
         svg.select("circle")
           .attr("cx", function() {

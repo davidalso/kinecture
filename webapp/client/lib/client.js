@@ -33,6 +33,15 @@ Template.body.helpers({
   intersection: function() {
     return JSON.stringify(Session.get("intersection"));
   },
+  delayframe:function() {
+    return Session.get("delayframe");
+  },
+  delayaverage:function() {
+    return Session.get("delayaverage");
+  },
+  absdelay:function() {
+    return Session.get("absdelay");
+  },
   showAdminPanel: function() {
     return Session.get("showAdminPanel");
   }
