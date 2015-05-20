@@ -33,6 +33,9 @@ Template.body.helpers({
   intersection: function() {
     return JSON.stringify(Session.get("intersection"));
   },
+  notestate: function() {
+    return JSON.stringify(Session.get("notestate"));
+  },
   delayframe:function() {
     return Session.get("delayframe");
   },

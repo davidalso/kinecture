@@ -1,5 +1,3 @@
-
-
   var ta = new Date();
   var tb = new Date();
 
@@ -7,6 +5,18 @@
   var delayTotal = 0;
   var delayAbsTot = 0;
   var delayCount = 0;
+
+  var waittime = 3000;
+  var silencesupport = 0;
+  var noisesupport = 0;
+  var notifysupport = 0;
+  var minsupport = 2;
+  var lastSilence = new Date();
+
+  // timestate 0 <- idle
+  // timestate 1 <- double_silence
+  // timestate 2 <- noted
+  var timestate = 0;
 
 Template.graph.rendered = function(){
   //Width and height
@@ -145,9 +155,7 @@ Template.graph.rendered = function(){
       var e1 = dataset[0];
       var e2 = dataset[1];
 
-      if(e1.silence && e2.silence){
-        console.log("Everthing is silent"+ new Date());
-      }
+
 
       var loudness = (e1.loudness + e2.loudness)/2;
       var loudness_scaled = Math.min(loudness * 500.0, 1.0); // usually loudness <= 0.1
@@ -159,19 +167,80 @@ Template.graph.rendered = function(){
 
       ta = tb;
       tb = new Date();
-      delay = tb.getMilliseconds() - ta.getMilliseconds();
+      delay = tb.getTime() - ta.getTime();
       
       delayTotal += delay;
       delayAbsTot += Math.abs(delay);
       delayCount +=1;
       var delavg = delayTotal / delayCount;
 
-      
       Session.set("delayframe", delay);
       Session.set("delayaverage", delavg);
       Session.set("absdelay", delayAbsTot/delayCount);
+    
+      var tdiff = 0;
 
+     if(e1.silence && e2.silence){
+        switch(timestate){
+          // idle so track support until we start the clock
+          case 0:
+            silencesupport += 1;
+            if (silencesupport > minsupport) {
+              lastSilence = new Date();
+              noisesupport = 0;
+              notifysupport = 0;
+              timestate = 1;
+            }
+          break;
+
+          //
+          case 1:
+            var now = new Date()
+            tdiff = Math.abs(now.getTime() - lastSilence.getTime());
+            if (tdiff > waittime) {
+              notifysupport += 1
+            }
+            if(notifysupport > minsupport){
+              if(navigator && navigator.vibrate) {
+                navigator.vibrate(500);
+              }
+              timestate = 2;
+            }
+          break;
+
+          case 2:
+            //don't care
+          break;
+        }
+      }
+      else {
+        switch(timestate) {
+          case 0:
+            //don't care
+          break;
+
+          case 1:
+            //go to ts 0
+            noisesupport +=1;
+            if(noisesupport > minsupport) {
+              timestate = 0;
+              silencesupport = 0;
+            }
+          break;
+          
+          case 2:
+            //go to ts 0
+            noisesupport +=1;
+            if(noisesupport > minsupport) {
+              timestate = 0;
+              silencesupport = 0;
+            }
+          break;
+        }
+      }
       
+      Session.set("notestate",{"timestate":timestate,"silencesupport":silencesupport,"noisesupport":noisesupport,"notifysupport":notifysupport,"tdiff":tdiff})
+
       if (intersect) {
         svg.select("circle")
           .attr("cx", function() {
