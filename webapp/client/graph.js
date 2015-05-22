@@ -13,10 +13,16 @@
   var minsupport = 2;
   var lastSilence = new Date();
 
+  var lerpTime = 2000;
+
   // timestate 0 <- idle
   // timestate 1 <- double_silence
   // timestate 2 <- noted
   var timestate = 0;
+
+function lerp(from, to, by) {
+  return form + (to - from) * by;
+}
 
 Template.graph.rendered = function(){
   //Width and height
@@ -170,13 +176,11 @@ Template.graph.rendered = function(){
       delay = tb.getTime() - ta.getTime();
       
       delayTotal += delay;
-      delayAbsTot += Math.abs(delay);
       delayCount +=1;
       var delavg = delayTotal / delayCount;
 
       Session.set("delayframe", delay);
       Session.set("delayaverage", delavg);
-      Session.set("absdelay", delayAbsTot/delayCount);
     
       var tdiff = 0;
 
@@ -197,10 +201,12 @@ Template.graph.rendered = function(){
           case 1:
             var now = new Date()
             tdiff = Math.abs(now.getTime() - lastSilence.getTime());
+            
             if (tdiff > waittime) {
               notifysupport += 1
             }
             if(notifysupport > minsupport){
+              Session.set("notificationColor","hsl(120,85%,40%)");
               if(navigator && navigator.vibrate) {
                 navigator.vibrate(500);
               }
@@ -225,6 +231,7 @@ Template.graph.rendered = function(){
             if(noisesupport > minsupport) {
               timestate = 0;
               silencesupport = 0;
+              Session.set("notificationColor","hsl(0,85%,50%)");
             }
           break;
           
@@ -234,6 +241,7 @@ Template.graph.rendered = function(){
             if(noisesupport > minsupport) {
               timestate = 0;
               silencesupport = 0;
+              Session.set("notificationColor","hsl(0,85%,50%)");
             }
           break;
         }

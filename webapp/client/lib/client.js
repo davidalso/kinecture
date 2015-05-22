@@ -47,6 +47,9 @@ Template.body.helpers({
   },
   showAdminPanel: function() {
     return Session.get("showAdminPanel");
+  },
+  notificationColor:function() {
+    return Session.get("notificationColor");
   }
 });
 

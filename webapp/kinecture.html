@@ -8,6 +8,10 @@
       <h1>Kinect Angles</h1>
     </header>
 
+
+    <div class="note" style="background-color:{{notificationColor}}"></div>
+
+
     {{#if showAdminPanel}}
     <button type="button" class="btn" id="hideAdminPanel">Hide Admin Panel</button>
     {{> controls}}
@@ -41,7 +45,6 @@
       Intersection: {{intersection}}<br>
       Delay Frame: {{delayframe}}<br>
       Delay Average: {{delayaverage}}<br>
-      Delay Average Abs: {{absdelay}}<br>
       Notification State: {{notestate}}
     </div>
 
