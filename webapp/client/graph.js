@@ -231,7 +231,7 @@ Template.graph.rendered = function(){
             if(noisesupport > minsupport) {
               timestate = 0;
               silencesupport = 0;
-              Session.set("notificationColor","hsl(0,85%,50%)");
+              Session.set("notificationColor","hsl(250,85%,50%)");
             }
           break;
           
@@ -241,7 +241,7 @@ Template.graph.rendered = function(){
             if(noisesupport > minsupport) {
               timestate = 0;
               silencesupport = 0;
-              Session.set("notificationColor","hsl(0,85%,50%)");
+              Session.set("notificationColor","hsl(250,85%,50%)");
             }
           break;
         }
