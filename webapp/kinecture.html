@@ -8,8 +8,9 @@
       <h1>Kinect Angles</h1>
     </header>
 
+    <div>Notification State: {{notestate}}</div>
 
-    <div class="note" style="background-color:{{notificationColor}}"></div>
+    <div id="notification-target" class="note" style="background-color:{{notificationColor}}"></div>
 
 
     {{#if showAdminPanel}}
@@ -45,7 +46,6 @@
       Intersection: {{intersection}}<br>
       Delay Frame: {{delayframe}}<br>
       Delay Average: {{delayaverage}}<br>
-      Notification State: {{notestate}}
     </div>
 
     {{> graph}}
