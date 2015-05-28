@@ -207,6 +207,7 @@ Template.graph.rendered = function(){
             }
             if(notifysupport > minsupport){
               Session.set("notificationColor","hsl(120,85%,40%)");
+              Session.set("notificationColor2","hsl(120,20%,40%");
               if(navigator && navigator.vibrate) {
                 navigator.vibrate(500);
               }
@@ -232,6 +233,8 @@ Template.graph.rendered = function(){
               timestate = 0;
               silencesupport = 0;
               Session.set("notificationColor","hsl(250,85%,50%)");
+              Session.set("notificationColor2","hsl(250,20%,50%)");
+
             }
           break;
           
@@ -242,6 +245,7 @@ Template.graph.rendered = function(){
               timestate = 0;
               silencesupport = 0;
               Session.set("notificationColor","hsl(250,85%,50%)");
+              Session.set("notificationColor2","hsl(250,20%,50%)");
             }
           break;
         }

@@ -51,6 +51,10 @@ Template.body.helpers({
   notificationColor:function() {
     return Session.get("notificationColor");
   }
+  notificationColor2:function() {
+    return Session.get("notificationColor2");
+  }
+
 });
 
 Template.body.events({
