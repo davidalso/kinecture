@@ -1,6 +1,13 @@
 .note {
-  width:900px;
-  height:300px;
+  width:1000px;
+  height:900px;
+  border:1px solid black;
+  display:block;
+}
+
+.note-small {
+  width:300px;
+  height:200px;
   border:1px solid black;
   display:block;
 }
