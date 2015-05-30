@@ -207,7 +207,6 @@ Template.graph.rendered = function(){
             }
             if(notifysupport > minsupport){
               Session.set("notificationColor","hsl(120,85%,40%)");
-              Session.set("notificationIcon","artwork/TA-Talk-icon.png");
               if(navigator && navigator.vibrate) {
                 navigator.vibrate(500);
               }
@@ -233,8 +232,6 @@ Template.graph.rendered = function(){
               timestate = 0;
               silencesupport = 0;
               Session.set("notificationColor","hsl(0,85%,50%)");
-              Session.set("notificationIcon","artwork/TA-Talk-icon.png");
-
             }
           break;
           
@@ -245,7 +242,6 @@ Template.graph.rendered = function(){
               timestate = 0;
               silencesupport = 0;
               Session.set("notificationColor","hsl(0,85%,50%)");
-              Session.set("notificationIcon","artwork/TA-Talk-icon.png");
             }
           break;
         }
