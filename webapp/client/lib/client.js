@@ -53,6 +53,9 @@ Template.body.helpers({
   },
   notificationColor2:function() {
     return Session.get("notificationColor2");
+  },
+  notificationIcon:function() {
+    return Session.get("notificationIcon");
   }
 
 });
