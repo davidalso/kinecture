@@ -26,8 +26,8 @@
     NOTIFIED:2
   };
 
-  var NoTalkIcon = "/artwork/No-Talk-icon.png";
-  var StudentTalkIcon = "/artwork/Student-speak.png";
+  var NoTalkIcon = "/artwork/No-Talk-icon.jpg";
+  var StudentTalkIcon = "/artwork/Student-speak.jpg";
   var TATalkIcon = "/artwork/target.gif";
 
   Session.set("noteIcon",NoTalkIcon);
