@@ -11,7 +11,7 @@
   var noisesupport = 0;
   var notifysupport = 0;
   var minsupport = 2;
-  var cadenceTime = 1000;
+  var cadenceTime = 2000;
   var silenceStartTime = new Date();
   var lastTransition = new Date();
 
