@@ -4,22 +4,23 @@
 
 <body>
   <div class="container">
-    <header>
-      <h1>Kinect Angles</h1>
-    </header>
-
-    <div>Notification State: {{notestate}}</div>
-
+    
     <img class="icon-screen" src="{{noteIcon}}" width="200">
     <!--<img class="icon-screen" src="artwork/No-Talk-icon.png" width="200">
     <img class="icon-screen" src="artwork/Student-speak.png" width="200">
     <img class="icon-screen" src="artwork/TA-Talk-icon.png" width="200">-->
 
-    <div id="notification-target" class="note-small" style="background-color:{{notificationColor}}"></div>
+    <!--<div id="notification-target" class="note-small" style="background-color:{{notificationColor}}"></div>-->
+
+    <header>
+      <h1>Kinect Angles</h1>
+    </header>
 
     {{#if showAdminPanel}}
     <button type="button" class="btn" id="hideAdminPanel">Hide Admin Panel</button>
     {{> controls}}
+
+    <div>Notification State: {{notestate}}</div>
 
     <table class="table">
       <tr>
