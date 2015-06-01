@@ -50,6 +50,9 @@ Template.body.helpers({
   },
   notificationColor:function() {
     return Session.get("notificationColor");
+  },
+  noteIcon:function() {
+    return Session.get("noteIcon");
   }
 });
 

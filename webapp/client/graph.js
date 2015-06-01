@@ -11,7 +11,7 @@
   var noisesupport = 0;
   var notifysupport = 0;
   var minsupport = 2;
-  var lastSilence = new Date();
+  var lastTransition = new Date();
 
   var lerpTime = 2000;
 
@@ -20,8 +20,88 @@
   // timestate 2 <- noted
   var timestate = 0;
 
+  var States = {
+    IDLE: 0,
+    WT1: 1,
+    NOTIFIED:2
+  };
+
+  var NoTalkIcon = "/artwork/No-Talk-icon.png";
+  var StudentTalkIcon = "/artwork/Student-speak.png";
+  var TATalkIcon = "/artwork/TA-Talk-icon.png";
+
+  Session.set("noteIcon",NoTalkIcon);
+
 function lerp(from, to, by) {
   return form + (to - from) * by;
+}
+
+
+function goToState(newState){
+  switch(timestate){
+    case States.IDLE:
+      switch (newState){
+        case States.IDLE:
+          //ignore transitions from and to the same state
+          return;
+        case States.WT1:
+          Session.set("noteIcon",NoTalkIcon);
+          break;
+        case States.NOTIFIED:
+          break;
+      }
+      break;
+    case States.WT1:
+     switch (newState){
+        case States.IDLE:
+              Session.set("notificationColor","hsl(0,85%,50%)");
+              Session.set("noteIcon",TATalkIcon);
+          break;
+        case States.WT1:
+          //ignore transitions from and to the same state
+          return;
+        case States.NOTIFIED:
+              Session.set("notificationColor","hsl(120,85%,40%)");
+              Session.set("nodeIcon",StudentTalkIcon);
+          break;
+      }
+      break;
+    case States.NOTIFIED:
+     switch (newState){
+        case States.IDLE:
+              Session.set("notificationColor","hsl(0,85%,50%)");
+              Session.set("noteIcon",TATalkIcon);
+          break;
+        case States.WT1:
+          //this transition is impossible
+          break;
+        case States.NOTIFIED:
+          //ignore transitions from and to the same state
+          return;
+      }
+      break;
+    default:
+      console.log("reached an impossible state:"+timestate);
+  }
+  timestate = newState;
+  silencesupport = 0;
+  noisesupport = 0;
+  notifysupport = 0;
+  silencesupport = 0;
+  lastTransition = new Date();
+}
+
+/* 
+*  Anything that does a 1 shot notification should go in this function (like the
+*  vibration). Things that have long lasting state effects (like the icon and
+*  color changes) should go in the goToState() function
+*/
+function notify(){ 
+  
+  if(navigator && navigator.vibrate) {
+    navigator.vibrate(500);
+  }
+  goToState(States.NOTIFIED);
 }
 
 Template.graph.rendered = function(){
@@ -182,66 +262,54 @@ Template.graph.rendered = function(){
       Session.set("delayframe", delay);
       Session.set("delayaverage", delavg);
     
-      var tdiff = 0;
+      var now = new Date()
+      tdiff = Math.abs(now.getTime() - lastTransition.getTime());
 
-     if(e1.silence && e2.silence){
+      if(e1.silence && e2.silence){
         switch(timestate){
-          // idle so track support until we start the clock
-          case 0:
+          // if idle then track support for transition to WT1
+          case States.IDLE:
             silencesupport += 1;
             if (silencesupport > minsupport) {
-              lastSilence = new Date();
-              noisesupport = 0;
-              notifysupport = 0;
-              timestate = 1;
+              goToState(States.WT1);
             }
           break;
 
-          //
-          case 1:
-            var now = new Date()
-            tdiff = Math.abs(now.getTime() - lastSilence.getTime());
-            
+          // if waiting track, wait and track support for 
+          case States.WT1:
             if (tdiff > waittime) {
               notifysupport += 1
             }
             if(notifysupport > minsupport){
-              Session.set("notificationColor","hsl(120,85%,40%)");
-              if(navigator && navigator.vibrate) {
-                navigator.vibrate(500);
-              }
-              timestate = 2;
+              notify();
             }
           break;
 
-          case 2:
-            //don't care
+          case States.NOTIFIED:
+            //we've already been notified so it doesn't matter
           break;
         }
       }
+      // if we hear a noise
       else {
         switch(timestate) {
-          case 0:
-            //don't care
+          case States.IDLE:
+            //we've already heard noise so stay idle.
           break;
 
-          case 1:
+          case States.WT1:
             //go to ts 0
             noisesupport +=1;
             if(noisesupport > minsupport) {
-              timestate = 0;
-              silencesupport = 0;
-              Session.set("notificationColor","hsl(0,85%,50%)");
+              goToState(States.IDLE);
             }
           break;
           
-          case 2:
+          case States.NOTIFIED:
             //go to ts 0
             noisesupport +=1;
             if(noisesupport > minsupport) {
-              timestate = 0;
-              silencesupport = 0;
-              Session.set("notificationColor","hsl(0,85%,50%)");
+              
             }
           break;
         }
