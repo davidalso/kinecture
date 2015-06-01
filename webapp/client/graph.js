@@ -62,7 +62,7 @@ function goToState(newState){
           return;
         case States.NOTIFIED:
               Session.set("notificationColor","hsl(120,85%,40%)");
-              Session.set("nodeIcon",StudentTalkIcon);
+              Session.set("noteIcon",StudentTalkIcon);
           break;
       }
       break;
