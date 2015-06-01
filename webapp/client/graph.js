@@ -11,9 +11,9 @@
   var noisesupport = 0;
   var notifysupport = 0;
   var minsupport = 2;
+  var cadenceTime = 1000;
+  var silenceStartTime = new Date();
   var lastTransition = new Date();
-
-  var lerpTime = 2000;
 
   // timestate 0 <- idle
   // timestate 1 <- double_silence
@@ -21,9 +21,11 @@
   var timestate = 0;
 
   var States = {
-    IDLE: 0,
+    TEACHER: 0,
+    CADENCE: 4,
     WT1: 1,
-    NOTIFIED:2
+    NOTIFIED: 2,
+    STUDENT: 3
   };
 
   var NoTalkIcon = "/artwork/No-Talk-icon.jpg";
@@ -39,21 +41,24 @@ function lerp(from, to, by) {
 
 function goToState(newState){
   switch(timestate){
-    case States.IDLE:
+    case States.STUDENT:  // For now STUDENTS operates by the same rules as TEACHER
+    case States.TEACHER:
       switch (newState){
-        case States.IDLE:
+        case States.TEACHER:
           //ignore transitions from and to the same state
           return;
+        case States.CADENCE:
+          silenceStartTime = new Date();
+          break;
         case States.WT1:
           Session.set("noteIcon",NoTalkIcon);
           break;
-        case States.NOTIFIED:
-          break;
       }
       break;
+/////////////////
     case States.WT1:
      switch (newState){
-        case States.IDLE:
+        case States.TEACHER:
               Session.set("notificationColor","hsl(0,85%,50%)");
               Session.set("noteIcon",TATalkIcon);
           break;
@@ -66,20 +71,29 @@ function goToState(newState){
           break;
       }
       break;
+/////////////////
     case States.NOTIFIED:
      switch (newState){
-        case States.IDLE:
+        case States.TEACHER:
               Session.set("notificationColor","hsl(0,85%,50%)");
               Session.set("noteIcon",TATalkIcon);
-          break;
-        case States.WT1:
-          //this transition is impossible
           break;
         case States.NOTIFIED:
           //ignore transitions from and to the same state
           return;
       }
       break;
+/////////////////
+    case States.CADENCE:
+      switch (newState){
+        case States.WT1:
+              Session.set("noteIcon",NoTalkIcon);
+          break;
+        case State.CADENCE:
+          return;
+      }
+      break;
+////////////////
     default:
       console.log("reached an impossible state:"+timestate);
   }
@@ -268,16 +282,24 @@ Template.graph.rendered = function(){
       if(e1.silence && e2.silence){
         switch(timestate){
           // if idle then track support for transition to WT1
-          case States.IDLE:
+          case States.STUDENT:
+          case States.TEACHER:
             silencesupport += 1;
             if (silencesupport > minsupport) {
+              goToState(States.CADENCE);
+            }
+          break;
+
+          case States.CADENCE:
+            if (tdiff > cadenceTime) {
               goToState(States.WT1);
             }
           break;
 
+
           // if waiting track, wait and track support for 
           case States.WT1:
-            if (tdiff > waittime) {
+            if (tdiff + cadenceTime > waittime) {
               notifysupport += 1
             }
             if(notifysupport > minsupport){
@@ -293,15 +315,16 @@ Template.graph.rendered = function(){
       // if we hear a noise
       else {
         switch(timestate) {
-          case States.IDLE:
+          case States.TEACHER:
             //we've already heard noise so stay idle.
           break;
 
+          case States.CADENCE:
           case States.WT1:
             //go to ts 0
             noisesupport +=1;
             if(noisesupport > minsupport) {
-              goToState(States.IDLE);
+              goToState(States.TEACHER);
             }
           break;
           
@@ -309,7 +332,7 @@ Template.graph.rendered = function(){
             //go to ts 0
             noisesupport +=1;
             if(noisesupport > minsupport) {
-              goToState(States.IDLE);
+              goToState(States.TEACHER);
             }
           break;
         }
