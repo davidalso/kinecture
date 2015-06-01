@@ -28,7 +28,7 @@
 
   var NoTalkIcon = "/artwork/No-Talk-icon.png";
   var StudentTalkIcon = "/artwork/Student-speak.png";
-  var TATalkIcon = "/artwork/TA-Talk-icon.png";
+  var TATalkIcon = "/artwork/target.gif";
 
   Session.set("noteIcon",NoTalkIcon);
 
