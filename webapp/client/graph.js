@@ -309,7 +309,7 @@ Template.graph.rendered = function(){
             //go to ts 0
             noisesupport +=1;
             if(noisesupport > minsupport) {
-              
+              goToState(States.IDLE);
             }
           break;
         }
