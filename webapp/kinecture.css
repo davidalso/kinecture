@@ -22,6 +22,19 @@
   margin-right: auto
 }
 
+.icon-screen-trans {
+  width:1024px;
+  height: 525px;
+  opacity: 0.2;
+  filter: alpha(opacity=20); /* For IE8 and earlier */
+  border:1px solid black;
+  background-color: white;
+  display:block;
+  margin-left: auto;
+  margin-right: auto
+}
+
+
 /*body {
   font-family: sans-serif;
   background-color: #315481;
