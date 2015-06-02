@@ -13,6 +13,8 @@
 }
 
 .icon-screen {
+  width:1024px;
+  height: 525px;
   border:1px solid black;
   background-color: white;
   display:block;
