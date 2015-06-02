@@ -38,6 +38,7 @@ TATalkIcon.style.opacity="0.0"
 
   Session.set("noteIcon",NoTalkIcon);
 
+
 function lerp(from, to, by) {
   return form + (to - from) * by;
 }
@@ -56,7 +57,9 @@ function goToState(newState){
           break;
         case States.WT1:
           Session.set("noteIcon",NoTalkIcon);
-          NoTalkIcon.style.opacity="1.0";
+          Session.set("noteIconTA","none");
+          Session.set("noteIconStudent","none");
+          Session.set("noteIconSilent","block");
           break;
       }
       break;
@@ -66,6 +69,9 @@ function goToState(newState){
         case States.TEACHER:
               Session.set("notificationColor","hsl(0,85%,50%)");
               Session.set("noteIcon",TATalkIcon);
+              Session.set("noteIconTA","block");
+              Session.set("noteIconStudent","none");
+              Session.set("noteIconSilent","none");
           break;
         case States.WT1:
           //ignore transitions from and to the same state
@@ -73,6 +79,9 @@ function goToState(newState){
         case States.NOTIFIED:
               Session.set("notificationColor","hsl(120,85%,40%)");
               Session.set("noteIcon",StudentTalkIcon);
+              Session.set("noteIconTA","none");
+              Session.set("noteIconStudent","block");
+              Session.set("noteIconSilent","none");              
           break;
       }
       break;
@@ -82,6 +91,9 @@ function goToState(newState){
         case States.TEACHER:
               Session.set("notificationColor","hsl(0,85%,50%)");
               Session.set("noteIcon",TATalkIcon);
+              Session.set("noteIconTA","block");
+              Session.set("noteIconStudent","none");
+              Session.set("noteIconSilent","none");
           break;
         case States.NOTIFIED:
           //ignore transitions from and to the same state
@@ -93,6 +105,9 @@ function goToState(newState){
       switch (newState){
         case States.WT1:
               Session.set("noteIcon",NoTalkIcon);
+              Session.set("noteIconTA","none");
+              Session.set("noteIconStudent","none");
+              Session.set("noteIconSilent","block");
           break;
         case State.CADENCE:
           return;

@@ -51,8 +51,14 @@ Template.body.helpers({
   notificationColor:function() {
     return Session.get("notificationColor");
   },
-  noteIcon:function() {
-    return Session.get("noteIcon");
+  noteIconTA:function() {
+    return Session.get("noteIconTA");
+  },
+  noteIconStudent:function() {
+  return Session.get("noteIconStudent");
+  },
+  noteIconSilent:function() {
+  return Session.get("noteIconSilent");
   }
 });
 
