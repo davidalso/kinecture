@@ -13,10 +13,12 @@
 }
 
 .icon-screen {
-  width:1024px;
-  height:600px;
-  display:block;
+  width:500px;
+  height:500px;
   background-color: white;
+  display:block;
+  margin-left: auto;
+  margin-right: auto
 }
 
 /*body {
