@@ -17,6 +17,7 @@
   height: 525px;
   border:1px solid black;
   background-color: white;
+  background-image: none !important;
   display:block;
   margin-left: auto;
   margin-right: auto
@@ -27,7 +28,7 @@
   height: 525px;
   border:1px solid black;
   background-color: white;
-  
+  background-image: none !important;  
   margin-left: auto;
   margin-right: auto;
 
