@@ -28,9 +28,9 @@
     STUDENT: 3
   };
 
-  var NoTalkIcon = "/artwork/No-Talk-icon.jpg";
-  var StudentTalkIcon = "/artwork/Student-speak.jpg";
-  var TATalkIcon = "/artwork/target2.gif";
+  var NoTalkIcon = "/artwork/No-Talk-icon-v2.jpg";
+  var StudentTalkIcon = "/artwork/Student-speak-v2.jpg";
+  var TATalkIcon = "/artwork/TA-Talk-v2.jpg";
 
   Session.set("noteIcon",NoTalkIcon);
 
