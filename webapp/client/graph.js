@@ -31,12 +31,13 @@
   var NoTalkIcon = "/artwork/No-Talk-icon-v2.jpg";
   var StudentTalkIcon = "/artwork/Student-speak-v2.jpg";
   var TATalkIcon = "/artwork/TA-Talk-v2.jpg";
-
-  Session.set("noteIcon",NoTalkIcon);
-  
+ 
   Session.set("noteIconTA","none");
   Session.set("noteIconStudent","none");
   Session.set("noteIconSilent","none");
+
+  Session.set("lastState",States.TEACHER);
+  Session.set("currState",States.WT1);
 
 function lerp(from, to, by) {
   return form + (to - from) * by;
@@ -55,7 +56,7 @@ function goToState(newState){
           silenceStartTime = new Date();
           break;
         case States.WT1:
-          Session.set("noteIcon",NoTalkIcon);
+          // Session.set("noteIcon",NoTalkIcon);
           Session.set("noteIconTA","none");
           Session.set("noteIconStudent","none");
           Session.set("noteIconSilent","block");
@@ -66,8 +67,8 @@ function goToState(newState){
     case States.WT1:
      switch (newState){
         case States.TEACHER:
-              Session.set("notificationColor","hsl(0,85%,50%)");
-              Session.set("noteIcon",TATalkIcon);
+              // Session.set("notificationColor","hsl(0,85%,50%)");
+              // Session.set("noteIcon",TATalkIcon);
               Session.set("noteIconTA","block");
               Session.set("noteIconStudent","none");
               Session.set("noteIconSilent","none");
@@ -76,8 +77,8 @@ function goToState(newState){
           //ignore transitions from and to the same state
           return;
         case States.NOTIFIED:
-              Session.set("notificationColor","hsl(120,85%,40%)");
-              Session.set("noteIcon",StudentTalkIcon);
+              // Session.set("notificationColor","hsl(120,85%,40%)");
+              // Session.set("noteIcon",StudentTalkIcon);
               Session.set("noteIconTA","none");
               Session.set("noteIconStudent","block");
               Session.set("noteIconSilent","none");              
@@ -88,8 +89,8 @@ function goToState(newState){
     case States.NOTIFIED:
      switch (newState){
         case States.TEACHER:
-              Session.set("notificationColor","hsl(0,85%,50%)");
-              Session.set("noteIcon",TATalkIcon);
+              // Session.set("notificationColor","hsl(0,85%,50%)");
+              // Session.set("noteIcon",TATalkIcon);
               Session.set("noteIconTA","block");
               Session.set("noteIconStudent","none");
               Session.set("noteIconSilent","none");
@@ -103,12 +104,12 @@ function goToState(newState){
     case States.CADENCE:
       switch (newState){
         case States.WT1:
-              Session.set("noteIcon",NoTalkIcon);
+              // Session.set("noteIcon",NoTalkIcon);
               Session.set("noteIconTA","none");
               Session.set("noteIconStudent","none");
               Session.set("noteIconSilent","block");
           break;
-        case State.CADENCE:
+        case States.CADENCE:
           return;
       }
       break;
@@ -116,6 +117,8 @@ function goToState(newState){
     default:
       console.log("reached an impossible state:"+timestate);
   }
+  Session.set("lastState",timestate);
+  Session.set("currState",newState);
   timestate = newState;
   silencesupport = 0;
   noisesupport = 0;
