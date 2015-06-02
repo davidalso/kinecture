@@ -30,8 +30,9 @@
   border:1px solid black;
   background-color: white;
   display:block;
-  margin-left: auto;
-  margin-right: auto
+  position: absolute;
+  left: 0px;
+  top: 650px;
 }
 
 
