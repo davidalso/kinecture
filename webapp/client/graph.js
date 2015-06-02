@@ -32,12 +32,11 @@
   var StudentTalkIcon = "/artwork/Student-speak-v2.jpg";
   var TATalkIcon = "/artwork/TA-Talk-v2.jpg";
 
-NoTalkIcon.style.opacity="0.0";
-StudentTalkIcon.style.opacity="0.0"
-TATalkIcon.style.opacity="0.0"
-
   Session.set("noteIcon",NoTalkIcon);
-
+  
+  Session.set("noteIconTA","none");
+  Session.set("noteIconStudent","none");
+  Session.set("noteIconSilent","none");
 
 function lerp(from, to, by) {
   return form + (to - from) * by;
