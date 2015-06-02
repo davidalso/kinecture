@@ -15,7 +15,7 @@
   var silenceStartTime = new Date();
   var lastTransition = new Date();
 
-  // timestate 0 <- idle
+    // timestate 0 <- idle
   // timestate 1 <- double_silence
   // timestate 2 <- noted
   var timestate = 0;
@@ -31,6 +31,10 @@
   var NoTalkIcon = "/artwork/No-Talk-icon-v2.jpg";
   var StudentTalkIcon = "/artwork/Student-speak-v2.jpg";
   var TATalkIcon = "/artwork/TA-Talk-v2.jpg";
+
+NoTalkIcon.style.opacity="0.0";
+StudentTalkIcon.style.opacity="0.0"
+TATalkIcon.style.opacity="0.0"
 
   Session.set("noteIcon",NoTalkIcon);
 
@@ -52,6 +56,7 @@ function goToState(newState){
           break;
         case States.WT1:
           Session.set("noteIcon",NoTalkIcon);
+          NoTalkIcon.style.opacity="1.0";
           break;
       }
       break;
