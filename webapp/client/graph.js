@@ -385,23 +385,39 @@ Template.graph.rendered = function(){
           break;
 
           case States.CADENCE:
+
           case States.WT1:
             //go to ts 0
-            noisesupport +=1;
-            if(noisesupport > minsupport) {
-              goToState(States.TEACHER);
+            if (intersect) {
+              noisesupport +=1;
+              if(noisesupport > minsupport){
+                if((yScale(intersect.y) > (roomLength - element.dy))) {
+                  goToState(States.TEACHER);
+                }
+                else {
+                  goToState(States.STUDENT);
+                }
+              }
+            }
+          break;
+
+          case States.NOTIFIED:
+            //go to ts 0
+            if (intersect) {
+              noisesupport +=1;
+              if(noisesupport > minsupport){
+                if((yScale(intersect.y) > (roomLength - element.dy))) {
+                  goToState(States.TEACHER);
+                }
+                else {
+                  goToState(States.STUDENT);
+                }
+              }
             }
           break;
           
-          case States.NOTIFIED:
-            //go to ts 0
-            noisesupport +=1;
-            if(noisesupport > minsupport) {
-              goToState(States.TEACHER);
-            }
-          break;
-        }
       }
+    }
       
       Session.set("notestate",{"timestate":timestate,"silencesupport":silencesupport,"noisesupport":noisesupport,"notifysupport":notifysupport,"tdiff":tdiff})
 
