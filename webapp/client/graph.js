@@ -26,15 +26,20 @@
     WT1: 1,
     NOTIFIED: 2,
     STUDENT: 3
+    // WT2: 5      // This doesn't exist yet, but might want it later.
   };
 
-  var NoTalkIcon = "/artwork/No-Talk-icon-v2.jpg";
+  var NoTalkIcon = "/artwork/No-Talk-icon-v2.jpg";    // When we add WT2, this will change to WT1icon
   var StudentTalkIcon = "/artwork/Student-speak-v2.jpg";
   var TATalkIcon = "/artwork/TA-Talk-v2.jpg";
+  // var WT2icon = ""                       // This doesn't exist yet, but might want it later.
+
+  Session.set("lastState",States.TEACHER);
  
   Session.set("noteIconTA","none");
   Session.set("noteIconStudent","none");
-  Session.set("noteIconSilent","none");
+  Session.set("noteIconSilent","none");     // When we add WT2, this will change to WT1
+  //  Session.set("noteIconWT2","none");    // This doesn't exist yet, but might want it later.
 
   Session.set("lastState",States.TEACHER);
   Session.set("currState",States.WT1);
@@ -46,15 +51,20 @@ function lerp(from, to, by) {
 
 function goToState(newState){
   switch(timestate){
-    case States.STUDENT:  // For now STUDENTS operates by the same rules as TEACHER
-    case States.TEACHER:
+    case States.STUDENT:  // For now STUDENT operates by the same rules as TEACHER
       switch (newState){
-        case States.TEACHER:
+        case States.STUDENT:
           //ignore transitions from and to the same state
           return;
+        case States.TEACHER:
+          Session.set("noteIconTA","block");
+          Session.set("noteIconStudent","none");
+          Session.set("noteIconSilent","none");
+          break;
         case States.CADENCE:
           silenceStartTime = new Date();
           break;
+        // case States.WT2:         // This doesn't exist yet, but might want it later. When we do it, we will change the next line, because WT1 cannot follow STUDENT
         case States.WT1:
           // Session.set("noteIcon",NoTalkIcon);
           Session.set("noteIconTA","none");
@@ -63,37 +73,70 @@ function goToState(newState){
           break;
       }
       break;
+//////////////////
+    case States.TEACHER:
+      switch (newState){
+        case States.TEACHER:
+          //ignore transitions from and to the same state
+          return;
+        case States.STUDENT:
+          Session.set("noteIconTA","none");
+          Session.set("noteIconStudent","block");
+          Session.set("noteIconSilent","none");
+          break;
+        case States.CADENCE:
+          silenceStartTime = new Date();
+          break;
+        case States.WT1:
+          // Session.set("noteIcon",NoTalkIcon);
+          Session.set("noteIconTA","none");
+          Session.set("noteIconStudent","none");
+          Session.set("noteIconSilent","block");
+        break;
+      }
+      break;
 /////////////////
     case States.WT1:
      switch (newState){
+        case States.STUDENT:
+          Session.set("noteIconTA","none");
+          Session.set("noteIconStudent","block");
+          Session.set("noteIconSilent","none");
+          break;
         case States.TEACHER:
-              // Session.set("notificationColor","hsl(0,85%,50%)");
-              // Session.set("noteIcon",TATalkIcon);
-              Session.set("noteIconTA","block");
-              Session.set("noteIconStudent","none");
-              Session.set("noteIconSilent","none");
+          // Session.set("notificationColor","hsl(0,85%,50%)");
+          // Session.set("noteIcon",TATalkIcon);
+          Session.set("noteIconTA","block");
+          Session.set("noteIconStudent","none");
+          Session.set("noteIconSilent","none");
           break;
         case States.WT1:
           //ignore transitions from and to the same state
           return;
         case States.NOTIFIED:
-              // Session.set("notificationColor","hsl(120,85%,40%)");
-              // Session.set("noteIcon",StudentTalkIcon);
-              Session.set("noteIconTA","none");
-              Session.set("noteIconStudent","block");
-              Session.set("noteIconSilent","none");              
+          // Session.set("notificationColor","hsl(120,85%,40%)");
+          // Session.set("noteIcon",StudentTalkIcon);
+          Session.set("noteIconTA","none");
+          Session.set("noteIconStudent","block");
+          Session.set("noteIconSilent","none"); 
+          // Will need a new Session.set here for notifying on student rather than notifying on 3 seconds             
           break;
       }
       break;
 /////////////////
     case States.NOTIFIED:
      switch (newState){
+        case States.STUDENT:
+          Session.set("noteIconTA","none");
+          Session.set("noteIconStudent","block");
+          Session.set("noteIconSilent","none");
+          break;
         case States.TEACHER:
-              // Session.set("notificationColor","hsl(0,85%,50%)");
-              // Session.set("noteIcon",TATalkIcon);
-              Session.set("noteIconTA","block");
-              Session.set("noteIconStudent","none");
-              Session.set("noteIconSilent","none");
+          // Session.set("notificationColor","hsl(0,85%,50%)");
+          // Session.set("noteIcon",TATalkIcon);
+          Session.set("noteIconTA","block");
+          Session.set("noteIconStudent","none");
+          Session.set("noteIconSilent","none");
           break;
         case States.NOTIFIED:
           //ignore transitions from and to the same state
