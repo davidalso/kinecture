@@ -375,8 +375,8 @@ Template.graph.rendered = function(){
           case States.NOTIFIED:
             //we've already been notified so it doesn't matter
           break;
+          }
         }
-      }
       // if we hear a noise
       else {
         switch(timestate) {
@@ -385,39 +385,40 @@ Template.graph.rendered = function(){
           break;
 
           case States.CADENCE:
-
           case States.WT1:
             //go to ts 0
             if (intersect) {
               noisesupport +=1;
               if(noisesupport > minsupport){
-                if((yScale(intersect.y) > (roomLength - element.dy))) {
+                if(parseFloat(intersect.y) > (parseFloat(roomLength) - 4)) {
                   goToState(States.TEACHER);
-                }
+              }
                 else {
                   goToState(States.STUDENT);
                 }
               }
             }
           break;
-
           case States.NOTIFIED:
             //go to ts 0
             if (intersect) {
               noisesupport +=1;
               if(noisesupport > minsupport){
-                if((yScale(intersect.y) > (roomLength - element.dy))) {
+                if(parseFloat(intersect.y) > (parseFloat(roomLength) - 4)) {
                   goToState(States.TEACHER);
-                }
+              }
                 else {
                   goToState(States.STUDENT);
                 }
               }
-            }
           break;
+
+            }
+          }
+        } 
           
-      }
-    }
+
+
       
       Session.set("notestate",{"timestate":timestate,"silencesupport":silencesupport,"noisesupport":noisesupport,"notifysupport":notifysupport,"tdiff":tdiff})
 
