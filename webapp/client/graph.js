@@ -15,7 +15,7 @@
   var silenceStartTime = new Date();
   var lastTransition = new Date();
 
-    // timestate 0 <- idle
+  // timestate 0 <- idle
   // timestate 1 <- double_silence
   // timestate 2 <- noted
   var timestate = 0;
@@ -26,454 +26,514 @@
     WT1: 1,
     NOTIFIED: 2,
     STUDENT: 3
-    // WT2: 5      // This doesn't exist yet, but might want it later.
+      // WT2: 5      // This doesn't exist yet, but might want it later.
   };
 
-  var NoTalkIcon = "/artwork/No-Talk-icon-v2.jpg";    // When we add WT2, this will change to WT1icon
+  var NoTalkIcon = "/artwork/No-Talk-icon-v2.jpg"; // When we add WT2, this will change to WT1icon
   var StudentTalkIcon = "/artwork/Student-speak-v2.jpg";
   var TATalkIcon = "/artwork/TA-Talk-v2.jpg";
   // var WT2icon = ""                       // This doesn't exist yet, but might want it later.
 
-  Session.set("lastState",States.TEACHER);
- 
-  Session.set("noteIconTA","none");
-  Session.set("noteIconStudent","none");
-  Session.set("noteIconSilent","none");     // When we add WT2, this will change to WT1
+  Session.set("lastState", States.TEACHER);
+
+  Session.set("noteIconTA", "none");
+  Session.set("noteIconStudent", "none");
+  Session.set("noteIconSilent", "none"); // When we add WT2, this will change to WT1
   //  Session.set("noteIconWT2","none");    // This doesn't exist yet, but might want it later.
 
-  Session.set("lastState",States.TEACHER);
-  Session.set("currState",States.WT1);
+  Session.set("lastState", States.TEACHER);
+  Session.set("currState", States.WT1);
 
-function lerp(from, to, by) {
-  return form + (to - from) * by;
-}
+  function lerp(from, to, by) {
+    return form + (to - from) * by;
+  }
 
 
-function goToState(newState){
-  switch(timestate){
-    case States.STUDENT:  // For now STUDENT operates by the same rules as TEACHER
-      switch (newState){
-        case States.STUDENT:
-          //ignore transitions from and to the same state
-          return;
-        case States.TEACHER:
-          Session.set("noteIconTA","block");
-          Session.set("noteIconStudent","none");
-          Session.set("noteIconSilent","none");
-          break;
-        case States.CADENCE:
-          silenceStartTime = new Date();
-          break;
-        // case States.WT2:         // This doesn't exist yet, but might want it later. When we do it, we will change the next line, because WT1 cannot follow STUDENT
-        case States.WT1:
-          // Session.set("noteIcon",NoTalkIcon);
-          Session.set("noteIconTA","none");
-          Session.set("noteIconStudent","none");
-          Session.set("noteIconSilent","block");
-          break;
-      }
-      break;
-//////////////////
-    case States.TEACHER:
-      switch (newState){
-        case States.TEACHER:
-          //ignore transitions from and to the same state
-          return;
-        case States.STUDENT:
-          Session.set("noteIconTA","none");
-          Session.set("noteIconStudent","block");
-          Session.set("noteIconSilent","none");
-          break;
-        case States.CADENCE:
-          silenceStartTime = new Date();
-          break;
-        case States.WT1:
-          // Session.set("noteIcon",NoTalkIcon);
-          Session.set("noteIconTA","none");
-          Session.set("noteIconStudent","none");
-          Session.set("noteIconSilent","block");
+  function goToState(newState) {
+    switch (timestate) {
+      case States.STUDENT: // For now STUDENT operates by the same rules as TEACHER
+        switch (newState) {
+          case States.STUDENT:
+            //ignore transitions from and to the same state
+            return;
+          case States.TEACHER:
+            Session.set("noteIconTA", "block");
+            Session.set("noteIconStudent", "none");
+            Session.set("noteIconSilent", "none");
+            break;
+          case States.CADENCE:
+            silenceStartTime = new Date();
+            break;
+            // case States.WT2:         // This doesn't exist yet, but might want it later. When we do it, we will change the next line, because WT1 cannot follow STUDENT
+          case States.WT1:
+            // Session.set("noteIcon",NoTalkIcon);
+            Session.set("noteIconTA", "none");
+            Session.set("noteIconStudent", "none");
+            Session.set("noteIconSilent", "block");
+            break;
+        }
         break;
-      }
-      break;
-/////////////////
-    case States.WT1:
-     switch (newState){
-        case States.STUDENT:
-          Session.set("noteIconTA","none");
-          Session.set("noteIconStudent","block");
-          Session.set("noteIconSilent","none");
-          break;
-        case States.TEACHER:
-          // Session.set("notificationColor","hsl(0,85%,50%)");
-          // Session.set("noteIcon",TATalkIcon);
-          Session.set("noteIconTA","block");
-          Session.set("noteIconStudent","none");
-          Session.set("noteIconSilent","none");
-          break;
-        case States.WT1:
-          //ignore transitions from and to the same state
-          return;
-        case States.NOTIFIED:
-          // Session.set("notificationColor","hsl(120,85%,40%)");
-          // Session.set("noteIcon",StudentTalkIcon);
-          Session.set("noteIconTA","none");
-          Session.set("noteIconStudent","block");
-          Session.set("noteIconSilent","none"); 
-          // Will need a new Session.set here for notifying on student rather than notifying on 3 seconds             
-          break;
-      }
-      break;
-/////////////////
-    case States.NOTIFIED:
-     switch (newState){
-        case States.STUDENT:
-          Session.set("noteIconTA","none");
-          Session.set("noteIconStudent","block");
-          Session.set("noteIconSilent","none");
-          break;
-        case States.TEACHER:
-          // Session.set("notificationColor","hsl(0,85%,50%)");
-          // Session.set("noteIcon",TATalkIcon);
-          Session.set("noteIconTA","block");
-          Session.set("noteIconStudent","none");
-          Session.set("noteIconSilent","none");
-          break;
-        case States.NOTIFIED:
-          //ignore transitions from and to the same state
-          return;
-      }
-      break;
-/////////////////
-    case States.CADENCE:
-      switch (newState){
-        case States.WT1:
-              // Session.set("noteIcon",NoTalkIcon);
-              Session.set("noteIconTA","none");
-              Session.set("noteIconStudent","none");
-              Session.set("noteIconSilent","block");
-          break;
-        case States.CADENCE:
-          return;
-      }
-      break;
-////////////////
-    default:
-      console.log("reached an impossible state:"+timestate);
+        //////////////////
+      case States.TEACHER:
+        switch (newState) {
+          case States.TEACHER:
+            //ignore transitions from and to the same state
+            return;
+          case States.STUDENT:
+            Session.set("noteIconTA", "none");
+            Session.set("noteIconStudent", "block");
+            Session.set("noteIconSilent", "none");
+            break;
+          case States.CADENCE:
+            silenceStartTime = new Date();
+            break;
+          case States.WT1:
+            // Session.set("noteIcon",NoTalkIcon);
+            Session.set("noteIconTA", "none");
+            Session.set("noteIconStudent", "none");
+            Session.set("noteIconSilent", "block");
+            break;
+        }
+        break;
+        /////////////////
+      case States.WT1:
+        switch (newState) {
+          case States.STUDENT:
+            Session.set("noteIconTA", "none");
+            Session.set("noteIconStudent", "block");
+            Session.set("noteIconSilent", "none");
+            break;
+          case States.TEACHER:
+            // Session.set("notificationColor","hsl(0,85%,50%)");
+            // Session.set("noteIcon",TATalkIcon);
+            Session.set("noteIconTA", "block");
+            Session.set("noteIconStudent", "none");
+            Session.set("noteIconSilent", "none");
+            break;
+          case States.WT1:
+            //ignore transitions from and to the same state
+            return;
+          case States.NOTIFIED:
+            // Session.set("notificationColor","hsl(120,85%,40%)");
+            // Session.set("noteIcon",StudentTalkIcon);
+            Session.set("noteIconTA", "none");
+            Session.set("noteIconStudent", "block");
+            Session.set("noteIconSilent", "none");
+            // Will need a new Session.set here for notifying on student rather than notifying on 3 seconds             
+            break;
+        }
+        break;
+        /////////////////
+      case States.NOTIFIED:
+        switch (newState) {
+          case States.STUDENT:
+            Session.set("noteIconTA", "none");
+            Session.set("noteIconStudent", "block");
+            Session.set("noteIconSilent", "none");
+            break;
+          case States.TEACHER:
+            // Session.set("notificationColor","hsl(0,85%,50%)");
+            // Session.set("noteIcon",TATalkIcon);
+            Session.set("noteIconTA", "block");
+            Session.set("noteIconStudent", "none");
+            Session.set("noteIconSilent", "none");
+            break;
+          case States.NOTIFIED:
+            //ignore transitions from and to the same state
+            return;
+        }
+        break;
+        /////////////////
+      case States.CADENCE:
+        switch (newState) {
+          case States.WT1:
+            // Session.set("noteIcon",NoTalkIcon);
+            Session.set("noteIconTA", "none");
+            Session.set("noteIconStudent", "none");
+            Session.set("noteIconSilent", "block");
+            break;
+          case States.CADENCE:
+            return;
+        }
+        break;
+        ////////////////
+      default:
+        console.log("reached an impossible state:" + timestate);
+    }
+    Session.set("lastState", timestate);
+    Session.set("currState", newState);
+    timestate = newState;
+    silencesupport = 0;
+    noisesupport = 0;
+    notifysupport = 0;
+    silencesupport = 0;
+    lastTransition = new Date();
   }
-  Session.set("lastState",timestate);
-  Session.set("currState",newState);
-  timestate = newState;
-  silencesupport = 0;
-  noisesupport = 0;
-  notifysupport = 0;
-  silencesupport = 0;
-  lastTransition = new Date();
-}
 
-/* 
-*  Anything that does a 1 shot notification should go in this function (like the
-*  vibration). Things that have long lasting state effects (like the icon and
-*  color changes) should go in the goToState() function
-*/
-function notify(){ 
-  
-  if(navigator && navigator.vibrate) {
-    navigator.vibrate(500);
+  /* 
+   *  Anything that does a 1 shot notification should go in this function (like the
+   *  vibration). Things that have long lasting state effects (like the icon and
+   *  color changes) should go in the goToState() function
+   */
+  function notify() {
+
+    if (navigator && navigator.vibrate) {
+      navigator.vibrate(500);
+    }
+    goToState(States.NOTIFIED);
   }
-  goToState(States.NOTIFIED);
-}
 
-Template.graph.rendered = function(){
-  //Width and height
-  var w = 500;
-  var h = 300;
-  var padding = 30;
+  Template.graph.rendered = function() {
+    //Width and height
+    var w = 500;
+    var h = 300;
+    var padding = 30;
 
 
-  //Create scale functions
-  var xScale = d3.scale.linear()
-             .range([padding, w - padding * 2]);
 
-  var yScale = d3.scale.linear()
-             .range([h - padding, padding]);
+    //Create scale functions
+    var xScale = d3.scale.linear()
+      .range([padding, w - padding * 2]);
 
-  //Define X axis
-  var xAxis = d3.svg.axis()
-          .scale(xScale)
-          .orient("bottom")
-          .ticks(5);
+    var yScale = d3.scale.linear()
+      .range([h - padding, padding]);
 
-  //Define Y axis
-  var yAxis = d3.svg.axis()
-          .scale(yScale)
-          .orient("left")
-          .ticks(5);
+    //Define X axis
+    var xAxis = d3.svg.axis()
+      .scale(xScale)
+      .orient("bottom")
+      .ticks(5);
 
-  //Create SVG element
-  var svg = d3.select("#graph")
-        .attr("width", w)
-        .attr("height", h);
+    //Define Y axis
+    var yAxis = d3.svg.axis()
+      .scale(yScale)
+      .orient("left")
+      .ticks(5);
 
-  //Define key function, to be used when binding data
-  var key = function(d) {
-    return d._id;
-  };
+    //Create SVG element
+    var svg = d3.select("#graph")
+      .attr("width", w)
+      .attr("height", h);
 
-  //Create X axis
-  svg.append("g")
-    .attr("class", "x axis")
-    .attr("transform", "translate(0," + (h - padding) + ")");
+    //Define key function, to be used when binding data
+    var key = function(d) {
+      return d._id;
+    };
 
-  //Create Y axis
-  svg.append("g")
-    .attr("class", "y axis")
-    .attr("transform", "translate(" + padding + ",0)");
-
-  svg.append("circle");
-
-  //This is the accessor function we talked about above
-  var lineFunction = d3.svg.line()
-                           .x(function(d) { return xScale(d.x); })
-                           .y(function(d) { return yScale(d.y); })
-                           .interpolate("linear");
-  var closedLineFunction = function(d) { return lineFunction(d) + "Z"; };
-
-  Deps.autorun(function(){
-
-    var defaultRoom = getDefaultRoom();
-    if (defaultRoom == null) {
-      return;
-    } else
-      console.log("yes default room");
-
-    defaultLeftRight();
-
-    var roomLength = defaultRoom.length;
-    var roomWidth = defaultRoom.width;
-
-    // w += 50;
-    h = roomLength * w / roomWidth;
-    xScale.range([padding, w - padding * 2]);
-    yScale.range([h - padding, padding]);
-    svg.attr("width", w)
-        .attr("height", h);
-
-    svg.select(".x.axis")
+    //Create X axis
+    svg.append("g")
+      .attr("class", "x axis")
       .attr("transform", "translate(0," + (h - padding) + ")");
 
-    //Update Y axis
-    svg.select(".y.axis")
+    //Create Y axis
+    svg.append("g")
+      .attr("class", "y axis")
       .attr("transform", "translate(" + padding + ",0)");
 
-    var query = {_id: {$in: [Session.get("left"), Session.get("right")]}};
-    var dataset = Kinects.find(query).fetch();
+    svg.append("circle");
 
-    // Make sure the cones are long enough to extend past the graph
-    var length = Math.round(1 + Math.sqrt(Math.pow(roomWidth,2) + Math.pow(roomLength,2)));
-    _.each(dataset, function(element) {
-      var getX = function(offsetAngle) {
-        return element.x + length * Math.cos((element.dtheta + Number(element.angle) + offsetAngle) * Math.PI / 180.0);
-      }
+    svg.append("line")
+      .attr("id", "TA-line")
+      .attr("stroke-width", 2)
+      .attr("stroke", "black")
+      .attr("x1", padding)
+      .attr("x2", w - padding)
+      .attr("y1", 0)
+      .attr("y2", 0);
 
-      var getY = function(offsetAngle) {
-        return element.y + length * Math.sin((element.dtheta + Number(element.angle) + offsetAngle) * Math.PI / 180.0);
-      }
+    //This is the accessor function we talked about above
+    var lineFunction = d3.svg.line()
+      .x(function(d) {
+        return xScale(d.x);
+      })
+      .y(function(d) {
+        return yScale(d.y);
+      })
+      .interpolate("linear");
+    var closedLineFunction = function(d) {
+      return lineFunction(d) + "Z";
+    };
 
-      if (element._id == Session.get("left")) {
-        element.x = element.dx;
-        element.y = roomLength - element.dy;
-      } else {
-        element.x = roomWidth - element.dx;
-        element.y = roomLength - element.dy;
-      }
+    Deps.autorun(function() {
 
-      element.x2 = getX(0);
-      element.y2 = getY(0);
+      var defaultRoom = getDefaultRoom();
+      if (defaultRoom == null) {
+        return;
+      } else
+        console.log("yes default room");
 
-      var confidenceAngle = Math.max(1, 45 * (1 - element.confidence));
+      defaultLeftRight();
 
-      element.x2l = getX(-confidenceAngle);
-      element.y2l = getY(-confidenceAngle);
-      element.x2r = getX(confidenceAngle);
-      element.y2r = getY(confidenceAngle);
-    });
+      var roomLength = defaultRoom.length;
+      var roomWidth = defaultRoom.width;
+      var roomTAzone = defaultRoom.TAzone;
 
-    //Update scale domains
-    xScale.domain([0, roomWidth]);
-    yScale.domain([0, roomLength]);
+      // w += 50;
+      h = roomLength * w / roomWidth;
+      xScale.range([padding, w - padding * 2]);
+      yScale.range([h - padding, padding]);
+      svg.attr("width", w)
+        .attr("height", h);
 
-    //Update X axis
-    svg.select(".x.axis")
-      .transition()
-      .duration(100)
-      .call(xAxis);
+      svg.select(".x.axis")
+        .attr("transform", "translate(0," + (h - padding) + ")");
 
-    //Update Y axis
-    svg.select(".y.axis")
-      .transition()
-      .duration(100)
-      .call(yAxis);
-
-    var cx, cy;
-    if (dataset.length >= 2) {
-
-      var e1 = dataset[0];
-      var e2 = dataset[1];
+      //Update Y axis
+      svg.select(".y.axis")
+        .attr("transform", "translate(" + padding + ",0)");
 
 
 
-      var loudness = (e1.loudness + e2.loudness)/2;
-      var loudness_scaled = Math.min(loudness * 500.0, 1.0); // usually loudness <= 0.1
-      var r = loudness_scaled * 20.0 + 5.0;
+      var query = {
+        _id: {
+          $in: [Session.get("left"), Session.get("right")]
+        }
+      };
+      var dataset = Kinects.find(query).fetch();
 
-      var intersect = lineIntersection(e1.x, e1.y, e1.x2, e1.y2, e2.x, e2.y, e2.x2, e2.y2);
-      
-      Session.set("intersection", intersect);
+      // Make sure the cones are long enough to extend past the graph
+      var length = Math.round(1 + Math.sqrt(Math.pow(roomWidth, 2) + Math.pow(roomLength, 2)));
 
-      ta = tb;
-      tb = new Date();
-      delay = tb.getTime() - ta.getTime();
-      
-      delayTotal += delay;
-      delayCount +=1;
-      var delavg = delayTotal / delayCount;
+      //for each kinect
+      _.each(dataset, function(element) {
+        var getX = function(offsetAngle) {
+          return element.x + length * Math.cos((element.dtheta + Number(element.angle) + offsetAngle) * Math.PI / 180.0);
+        }
 
-      Session.set("delayframe", delay);
-      Session.set("delayaverage", delavg);
-    
-      var now = new Date()
-      tdiff = Math.abs(now.getTime() - lastTransition.getTime());
+        var getY = function(offsetAngle) {
+          return element.y + length * Math.sin((element.dtheta + Number(element.angle) + offsetAngle) * Math.PI / 180.0);
+        }
 
-      if(e1.silence && e2.silence){
-        switch(timestate){
-          // if idle then track support for transition to WT1
-          case States.STUDENT:
-          case States.TEACHER:
-            silencesupport += 1;
-            if (silencesupport > minsupport) {
-              goToState(States.CADENCE);
-            }
-          break;
+        if (element._id == Session.get("left")) {
+          element.x = element.dx;
+          element.y = roomLength - element.dy;
+        } else {
+          element.x = roomWidth - element.dx;
+          element.y = roomLength - element.dy;
+        }
 
-          case States.CADENCE:
-            if (tdiff > cadenceTime) {
-              goToState(States.WT1);
-            }
-          break;
+        element.x2 = getX(0);
+        element.y2 = getY(0);
+
+        var confidenceAngle = Math.max(1, 45 * (1 - element.confidence));
+
+        element.x2l = getX(-confidenceAngle);
+        element.y2l = getY(-confidenceAngle);
+        element.x2r = getX(confidenceAngle);
+        element.y2r = getY(confidenceAngle);
+      });
+
+      //Update scale domains
+      xScale.domain([0, roomWidth]);
+      yScale.domain([0, roomLength]);
+
+      //Update X axis
+      svg.select(".x.axis")
+        .transition()
+        .duration(100)
+        .call(xAxis);
+
+      //Update Y axis
+      svg.select(".y.axis")
+        .transition()
+        .duration(100)
+        .call(yAxis);
+
+      console.log(JSON.stringify({
+        "h": h,
+        "padding": padding,
+        "roomLength": roomLength,
+        "roomWidth": roomWidth,
+        "w": w,
+        "TAzone": roomTAzone,
+        "TAzone-scaled": yScale(roomTAzone)
+      }));
+
+      //Draw the line for the TAzone
+      svg.select("#TA-line")
+        // .attr("transform", "translate(0, " + roomTAzone + ")");
+        .attr("y1", h - yScale(roomTAzone))
+        .attr("y2", h - yScale(roomTAzone));
 
 
-          // if waiting track, wait and track support for 
-          case States.WT1:
-            if (tdiff + cadenceTime > waittime) {
-              notifysupport += 1
-            }
-            if(notifysupport > minsupport){
-              notify();
-            }
-          break;
+      var cx, cy;
+      if (dataset.length >= 2) {
 
-          case States.NOTIFIED:
-            //we've already been notified so it doesn't matter
-          break;
+        var e1 = dataset[0];
+        var e2 = dataset[1];
+
+
+
+        var loudness = (e1.loudness + e2.loudness) / 2;
+        var loudness_scaled = Math.min(loudness * 500.0, 1.0); // usually loudness <= 0.1
+        var r = loudness_scaled * 20.0 + 5.0;
+
+        var intersect = lineIntersection(e1.x, e1.y, e1.x2, e1.y2, e2.x, e2.y, e2.x2, e2.y2);
+
+        Session.set("intersection", intersect);
+
+        ta = tb;
+        tb = new Date();
+        delay = tb.getTime() - ta.getTime();
+
+        delayTotal += delay;
+        delayCount += 1;
+        var delavg = delayTotal / delayCount;
+
+        Session.set("delayframe", delay);
+        Session.set("delayaverage", delavg);
+
+        var now = new Date()
+        tdiff = Math.abs(now.getTime() - lastTransition.getTime());
+
+        if (e1.silence && e2.silence) {
+          switch (timestate) {
+            // if idle then track support for transition to WT1
+            case States.STUDENT:
+            case States.TEACHER:
+              silencesupport += 1;
+              if (silencesupport > minsupport) {
+                goToState(States.CADENCE);
+              }
+              break;
+
+            case States.CADENCE:
+              if (tdiff > cadenceTime) {
+                goToState(States.WT1);
+              }
+              break;
+
+              // if waiting track, wait and track support for 
+            case States.WT1:
+              if (tdiff + cadenceTime > waittime) {
+                notifysupport += 1
+              }
+              if (notifysupport > minsupport) {
+                notify();
+              }
+              break;
           }
         }
-      // if we hear a noise
-      else {
-        switch(timestate) {
-          case States.TEACHER:
-            //we've already heard noise so stay idle.
-          break;
 
-          case States.CADENCE:
-          case States.WT1:
-            //go to ts 0
-            if (intersect) {
-              noisesupport +=1;
-              if(noisesupport > minsupport){
-                if(parseFloat(intersect.y) > (parseFloat(roomLength) - 4)) {
-                  goToState(States.TEACHER);
+        else if (intersect) {
+          // draw a circle on the graph
+          svg.select("circle")
+            .attr("cx", function() {
+              return xScale(intersect.x);
+            })
+            .attr("cy", function() {
+              return yScale(intersect.y);
+            })
+            .style("visibility", "visible")
+            .attr("r", r);
+
+          // follow these rules to check for evidence of state change
+          switch (timestate) {
+            case States.TEACHER:
+              //we've already heard noise so stay idle.
+              if (intersect.y < (roomLength - roomTAzone)) {
+                goToState(States.STUDENT)
               }
-                else {
+              break;
+
+            case States.STUDENT:
+              if (intersect.y >= (roomLength - roomTAzone)) {
+                goToState(States.TEACHER)
+              }
+              break;
+
+            case States.NOTIFIED:
+            case States.CADENCE:
+            case States.WT1:
+              //go to ts 0
+              noisesupport += 1;
+              if (noisesupport > minsupport) {
+                if (intersect.y > (roomLength - roomTAzone)) {
+                  goToState(States.TEACHER);
+                } else {
                   goToState(States.STUDENT);
                 }
               }
-            }
-          break;
-          case States.NOTIFIED:
-            //go to ts 0
-            if (intersect) {
-              noisesupport +=1;
-              if(noisesupport > minsupport){
-                if(parseFloat(intersect.y) > (parseFloat(roomLength) - 4)) {
-                  goToState(States.TEACHER);
-              }
-                else {
-                  goToState(States.STUDENT);
-                }
-              }
-          break;
-
-            }
+              break;
           }
         } 
-          
+        // when there is no intersection, don't draw a circle
+        else {
+          svg.select("circle").style("visibility", "hidden");
+          //This would be the place to do anything for noise detection on one side and not the other, or when two noises do not intersect
+        }
+       
+       Session.set("notestate", {
+          "timestate": timestate,
+          "silencesupport": silencesupport,
+          "noisesupport": noisesupport,
+          "notifysupport": notifysupport,
+          "tdiff": tdiff
+        }); 
+      } 
 
-
-      
-      Session.set("notestate",{"timestate":timestate,"silencesupport":silencesupport,"noisesupport":noisesupport,"notifysupport":notifysupport,"tdiff":tdiff})
-
-      if (intersect) {
-        svg.select("circle")
-          .attr("cx", function() {
-            return xScale(intersect.x);
-          })
-          .attr("cy", function() {
-            return yScale(intersect.y);
-          })
-          .style("visibility", "visible")
-          .attr("r", r);
-      } else {
+      else {
         svg.select("circle").style("visibility", "hidden");
+        Session.set("intersection", false);
       }
-    } else {
-      svg.select("circle").style("visibility", "hidden");
-      Session.set("intersection", false);
-    }
 
-    var lineFunction = d3.svg.line()
-      .x(function(d) { return d.x; })
-      .y(function(d) { return d.y; })
-      .interpolate("linear");
 
-    var lines = svg
-      .selectAll("path.cone")
-      .data(dataset, key);
+      var lineFunction = d3.svg.line()
+        .x(function(d) {
+          return d.x;
+        })
+        .y(function(d) {
+          return d.y;
+        })
+        .interpolate("linear");
 
-    //Create
-    lines
-      .enter()
-      .append("path")
-      .attr("class", "cone")
-      .attr("fill", "rgba(0,0,255,0.5)")
-      .attr("d", function(d) {
-        return closedLineFunction([{x: d.x, y: d.y}, {x: d.x2l, y: d.y2l}, {x: d.x2r, y: d.y2r}]);
-      });
+      var lines = svg
+        .selectAll("path.cone")
+        .data(dataset, key);
 
-    //Update
-    lines
-      .transition()
-      .duration(100)
-      .attr("d", function(d) {
-        return closedLineFunction([{x: d.x, y: d.y}, {x: d.x2l, y: d.y2l}, {x: d.x2r, y: d.y2r}]);
-      });
+      //Create
+      lines
+        .enter()
+        .append("path")
+        .attr("class", "cone")
+        .attr("fill", "rgba(0,0,255,0.5)")
+        .attr("d", function(d) {
+          return closedLineFunction([{
+            x: d.x,
+            y: d.y
+          }, {
+            x: d.x2l,
+            y: d.y2l
+          }, {
+            x: d.x2r,
+            y: d.y2r
+          }]);
+        });
+
+      //Update
+      lines
+        .transition()
+        .duration(100)
+        .attr("d", function(d) {
+          return closedLineFunction([{
+            x: d.x,
+            y: d.y
+          }, {
+            x: d.x2l,
+            y: d.y2l
+          }, {
+            x: d.x2r,
+            y: d.y2r
+          }]);
+        });
       // .attr("stroke", function(d) {
       //   return d.speech ? "rgba(255,0,0,0.5)" : "rgba(0,0,0,0.5)";
       // });
 
-    //Remove
-    lines
-      .exit()
-      .remove();
+      //Remove
+      lines
+        .exit()
+        .remove();
     });
 
-};
+  };

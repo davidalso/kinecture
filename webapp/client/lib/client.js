@@ -26,6 +26,14 @@ lineIntersection = function(line1StartX, line1StartY, line1EndX, line1EndY, line
   return result;
 };
 
+var States = {
+  TEACHER: 0,
+  CADENCE: 4,
+  WT1: 1,
+  NOTIFIED: 2,
+  STUDENT: 3
+};
+
 Template.body.helpers({
   kinects: function() {
     return Kinects.find({});
@@ -60,50 +68,54 @@ Template.body.helpers({
   noteIconSilent:function() {
     return Session.get("noteIconSilent");
   },
-  silentAnim:function() {
+  silentClass:function() {
     return "";
-    //return Session.get("silentAnim");
+    //return Session.get("silentClass");
   },
   silentStyle:function() {
     return "opacity:1.0";
     //return Session.get("silentStyle");
   },
-  studentAnim:function() {
-    if ((Session.get("lastState") == 3 && Session.get("currState") == 4) ||
-      (Session.get("lastState") == 4 && Session.get("currState") == 1)){
+  studentClass:function() {
+    if ((Session.get("lastState") == States.STUDENT && Session.get("currState") == States.CADENCE) ||
+      (Session.get("lastState") == States.CADENCE && Session.get("currState") == States.WT1)){
       return "icon-anim";
     }
     else {
       return "";
     }
-    //return Session.get("studentAnim");
+    //return Session.get("studentClass");
   },
   studentStyle:function() {
     switch(Session.get("currState")) {
-      case 0:
-        return "opacity:0;";
-      case 3:
+      //Use this only for Test Condition B
+      case States.STUDENT:
         return "opacity:1.0;"
       default:
         return "opacity:0;";
+      
+      //Use this and above for Test Condition A
+      // case WT1:
+      //   return "opacity:1.0;"
+      // case States.NOTIFIED:
+      //   return "opacity:1.0;"
+      
     }
     //return Session.get("studentStyle");
   },
-  taAnim:function() {
-    if ((Session.get("lastState") == 0 && Session.get("currState") == 4) ||
-      (Session.get("lastState") == 4 && Session.get("currState") == 1)){
+  taClass:function() {
+    if ((Session.get("lastState") == States.TEACHER && Session.get("currState") == States.CADENCE) ||
+      (Session.get("lastState") == States.CADENCE && Session.get("currState") == States.WT1)){
       return "icon-anim";
     }
     else {
       return "";
     }
-    //return Session.get("taAnim");
+    //return Session.get("taClass");
   },
   taStyle:function() {
     switch(Session.get("currState")) {
-      case 3:
-        return "opacity:0;";
-      case 0:
+      case States.TEACHER:
         return "opacity:1.0;"
       default:
         return "opacity:0;";
@@ -111,15 +123,6 @@ Template.body.helpers({
     //return Session.get("taStyle");
   }
 });
-
-
-  /*var States = {
-    TEACHER: 0,
-    CADENCE: 4,
-    WT1: 1,
-    NOTIFIED: 2,
-    STUDENT: 3
-  };*/
 
 Template.body.events({
   "click #showAdminPanel": function() {

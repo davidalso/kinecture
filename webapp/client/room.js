@@ -6,6 +6,9 @@ Template.room.events({
   "change .width": function() {
     Rooms.update(this._id, {$set: {width: event.target.valueAsNumber}});
   },
+  "change .TAzone": function() {
+    Rooms.update(this._id, {$set: {TAzone: event.target.valueAsNumber}});
+  },
 });
 
 Template.room.helpers({
