@@ -9,12 +9,12 @@
       <br>
       <br>
     </div>
-
+   
     <img class="icon-screen">
 
-    <img class="icon-screen-trans {{silentAnim}}" src="artwork/No-Talk-icon-v2.jpg" style="{{silentStyle}}">
-    <img class="icon-screen-trans {{studentAnim}}" src="artwork/Student-speak-v2.jpg" style="{{studentStyle}}">
-    <img class="icon-screen-trans  {{taAnim}}" src="artwork/TA-Talk-v2.jpg" style="{{taStyle}}">
+    <img class="icon-screen-trans {{silentClass}}" src="artwork/No-Talk-icon-v2.jpg" style="{{silentStyle}}">
+    <img class="icon-screen-trans {{studentClass}}" src="artwork/Student-speak-v2.jpg" style="{{studentStyle}}">
+    <img class="icon-screen-trans  {{taClass}}" src="artwork/TA-Talk-v2.jpg" style="{{taStyle}}">
     
 
     <div>
@@ -23,16 +23,17 @@
     </div>
 
     <!-- <div id="notification-target" class="note-small" style="background-color:{{notificationColor}}"></div> -->
-
+<div>Notification State: {{notestate}}</div>
     <header>
       <h1>Kinect Angles</h1>
     </header>
+
 
     {{#if showAdminPanel}}
     <button type="button" class="btn" id="hideAdminPanel">Hide Admin Panel</button>
     {{> controls}}
 
-    <div>Notification State: {{notestate}}</div>
+ 
 
     <table class="table">
       <tr>

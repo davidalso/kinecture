@@ -48,125 +48,36 @@
     return form + (to - from) * by;
   }
 
+  function reverseState(stat) {
+    switch(stat){
+      case States.TEACHER:
+        return "Teacher";
+      case States.STUDENT:
+        return "Student";
+      case States.CADENCE:
+        return "Cadence";
+      case States.WT1:
+        return "WT1";
+      case States.NOTIFIED:
+        return "Notified";
+    }
+  }
 
   function goToState(newState) {
-    switch (timestate) {
-      case States.STUDENT: // For now STUDENT operates by the same rules as TEACHER
-        switch (newState) {
-          case States.STUDENT:
-            //ignore transitions from and to the same state
-            return;
-          case States.TEACHER:
-            Session.set("noteIconTA", "block");
-            Session.set("noteIconStudent", "none");
-            Session.set("noteIconSilent", "none");
-            break;
-          case States.CADENCE:
-            silenceStartTime = new Date();
-            break;
-            // case States.WT2:         // This doesn't exist yet, but might want it later. When we do it, we will change the next line, because WT1 cannot follow STUDENT
-          case States.WT1:
-            // Session.set("noteIcon",NoTalkIcon);
-            Session.set("noteIconTA", "none");
-            Session.set("noteIconStudent", "none");
-            Session.set("noteIconSilent", "block");
-            break;
-        }
-        break;
-        //////////////////
-      case States.TEACHER:
-        switch (newState) {
-          case States.TEACHER:
-            //ignore transitions from and to the same state
-            return;
-          case States.STUDENT:
-            Session.set("noteIconTA", "none");
-            Session.set("noteIconStudent", "block");
-            Session.set("noteIconSilent", "none");
-            break;
-          case States.CADENCE:
-            silenceStartTime = new Date();
-            break;
-          case States.WT1:
-            // Session.set("noteIcon",NoTalkIcon);
-            Session.set("noteIconTA", "none");
-            Session.set("noteIconStudent", "none");
-            Session.set("noteIconSilent", "block");
-            break;
-        }
-        break;
-        /////////////////
-      case States.WT1:
-        switch (newState) {
-          case States.STUDENT:
-            Session.set("noteIconTA", "none");
-            Session.set("noteIconStudent", "block");
-            Session.set("noteIconSilent", "none");
-            break;
-          case States.TEACHER:
-            // Session.set("notificationColor","hsl(0,85%,50%)");
-            // Session.set("noteIcon",TATalkIcon);
-            Session.set("noteIconTA", "block");
-            Session.set("noteIconStudent", "none");
-            Session.set("noteIconSilent", "none");
-            break;
-          case States.WT1:
-            //ignore transitions from and to the same state
-            return;
-          case States.NOTIFIED:
-            // Session.set("notificationColor","hsl(120,85%,40%)");
-            // Session.set("noteIcon",StudentTalkIcon);
-            Session.set("noteIconTA", "none");
-            Session.set("noteIconStudent", "block");
-            Session.set("noteIconSilent", "none");
-            // Will need a new Session.set here for notifying on student rather than notifying on 3 seconds             
-            break;
-        }
-        break;
-        /////////////////
-      case States.NOTIFIED:
-        switch (newState) {
-          case States.STUDENT:
-            Session.set("noteIconTA", "none");
-            Session.set("noteIconStudent", "block");
-            Session.set("noteIconSilent", "none");
-            break;
-          case States.TEACHER:
-            // Session.set("notificationColor","hsl(0,85%,50%)");
-            // Session.set("noteIcon",TATalkIcon);
-            Session.set("noteIconTA", "block");
-            Session.set("noteIconStudent", "none");
-            Session.set("noteIconSilent", "none");
-            break;
-          case States.NOTIFIED:
-            //ignore transitions from and to the same state
-            return;
-        }
-        break;
-        /////////////////
-      case States.CADENCE:
-        switch (newState) {
-          case States.WT1:
-            // Session.set("noteIcon",NoTalkIcon);
-            Session.set("noteIconTA", "none");
-            Session.set("noteIconStudent", "none");
-            Session.set("noteIconSilent", "block");
-            break;
-          case States.CADENCE:
-            return;
-        }
-        break;
-        ////////////////
-      default:
-        console.log("reached an impossible state:" + timestate);
+    if(newState == timestate) {
+      return;
     }
+
+    else if (newState == States.CADENCE) {
+      silenceStartTime = new Date();
+    }
+
     Session.set("lastState", timestate);
     Session.set("currState", newState);
     timestate = newState;
     silencesupport = 0;
     noisesupport = 0;
     notifysupport = 0;
-    silencesupport = 0;
     lastTransition = new Date();
   }
 
@@ -448,9 +359,10 @@
               //go to ts 0
               noisesupport += 1;
               if (noisesupport > minsupport) {
-                if (intersect.y > (roomLength - roomTAzone)) {
+                if (intersect.y >= (roomLength - roomTAzone)) {
                   goToState(States.TEACHER);
-                } else {
+                } 
+                else {
                   goToState(States.STUDENT);
                 }
               }
@@ -464,7 +376,7 @@
         }
        
        Session.set("notestate", {
-          "timestate": timestate,
+          "timestate": reverseState(timestate),
           "silencesupport": silencesupport,
           "noisesupport": noisesupport,
           "notifysupport": notifysupport,
