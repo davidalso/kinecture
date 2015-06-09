@@ -86,13 +86,14 @@
    *  vibration). Things that have long lasting state effects (like the icon and
    *  color changes) should go in the goToState() function
    */
-  // function notify() {
+   function notify() {
 
-  //   if (navigator && navigator.vibrate) {
-  //     navigator.vibrate(500);
-  //   }
-  //   goToState(States.NOTIFIED);
-  // }
+  /*   if (navigator && navigator.vibrate) {
+       navigator.vibrate(500);
+     }
+  */
+     goToState(States.NOTIFIED);
+   }
 
   Template.graph.rendered = function() {
     //Width and height
@@ -170,8 +171,9 @@
       var defaultRoom = getDefaultRoom();
       if (defaultRoom == null) {
         return;
-      } else
-        console.log("yes default room");
+      } 
+      //else
+      //  console.log("yes default room");
 
       defaultLeftRight();
 
@@ -249,8 +251,8 @@
         .transition()
         .duration(100)
         .call(yAxis);
-
-      console.log(JSON.stringify({
+/*
+      .log(JSON.stringify({
         "h": h,
         "padding": padding,
         "roomLength": roomLength,
@@ -259,7 +261,7 @@
         "TAzone": roomTAzone,
         "TAzone-scaled": yScale(roomTAzone)
       }));
-
+*/
       //Draw the line for the TAzone
       svg.select("#TA-line")
         // .attr("transform", "translate(0, " + roomTAzone + ")");
@@ -324,6 +326,9 @@
               }
               break;
           }
+
+          // we also need to hide the circle on a double silence.
+          svg.select("circle").style("visibility", "hidden");
         }
 
         else if (intersect) {
