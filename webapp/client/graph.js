@@ -86,13 +86,13 @@
    *  vibration). Things that have long lasting state effects (like the icon and
    *  color changes) should go in the goToState() function
    */
-  function notify() {
+  // function notify() {
 
-    if (navigator && navigator.vibrate) {
-      navigator.vibrate(500);
-    }
-    goToState(States.NOTIFIED);
-  }
+  //   if (navigator && navigator.vibrate) {
+  //     navigator.vibrate(500);
+  //   }
+  //   goToState(States.NOTIFIED);
+  // }
 
   Template.graph.rendered = function() {
     //Width and height

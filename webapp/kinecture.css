@@ -17,6 +17,7 @@
   height: 525px;
   background-color: white;
   background-image: none !important;
+  border: none;
   display:block;
   margin-left: auto;
   margin-right: auto
