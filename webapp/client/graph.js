@@ -9,10 +9,9 @@
   var waittime = 3000;
   var silencesupport = 0;
   var noisesupport = 0;
-  var notifysupport = 0;
+  var waitsupport = 0;
   var minsupport = 2;
   var cadenceTime = 1500;
-  var silenceStartTime = new Date();
   var lastTransition = new Date();
 
   // timestate 0 <- idle
@@ -22,14 +21,15 @@
 
   var States = {
     TEACHER: 0,
-    CADENCE: 4,
-    WT1: 1,
-    NOTIFIED: 2,
-    STUDENT: 3
-      // WT2: 5      // This doesn't exist yet, but might want it later.
+    STUDENT: 3,
+    CADENCE_TEACHER: 4,
+    CADENCE_STUDENT: 6,
+    WAITING_TEACHER: 1,
+    WAITING_STUDENT: 5,
+    SILENCE: 2,
   };
 
-  var NoTalkIcon = "/artwork/No-Talk-icon-v2.jpg"; // When we add WT2, this will change to WT1icon
+  var NoTalkIcon = "/artwork/No-Talk-icon-v2.jpg"; // When we add WT2, this will change to WAITING_TEACHERicon
   var StudentTalkIcon = "/artwork/Student-speak-v2.jpg";
   var TATalkIcon = "/artwork/TA-Talk-v2.jpg";
   // var WT2icon = ""                       // This doesn't exist yet, but might want it later.
@@ -38,11 +38,11 @@
 
   Session.set("noteIconTA", "none");
   Session.set("noteIconStudent", "none");
-  Session.set("noteIconSilent", "none"); // When we add WT2, this will change to WT1
+  Session.set("noteIconSilent", "none"); // When we add WT2, this will change to WAITING_TEACHER
   //  Session.set("noteIconWT2","none");    // This doesn't exist yet, but might want it later.
 
   Session.set("lastState", States.TEACHER);
-  Session.set("currState", States.WT1);
+  Session.set("currState", States.WAITING_TEACHER);
 
 
 
@@ -56,12 +56,16 @@
         return "Teacher";
       case States.STUDENT:
         return "Student";
-      case States.CADENCE:
-        return "Cadence";
-      case States.WT1:
-        return "WT1";
-      case States.NOTIFIED:
-        return "Notified";
+      case States.CADENCE_TEACHER:
+        return "Cadence_Teacher";
+      case States.CADENCE_STUDENT:
+      	return "Cadence_Student";
+      case States.WAITING_TEACHER:
+        return "Waiting_Teacher";
+      case States.WAITING_STUDENT:
+      	return "Waiting_Student";
+      case States.SILENCE:
+        return "Silence";
     }
   }
 
@@ -70,16 +74,12 @@
       return;
     }
 
-    else if (newState == States.CADENCE) {
-      silenceStartTime = new Date();
-    }
-
     Session.set("lastState", timestate);
     Session.set("currState", newState);
     timestate = newState;
     silencesupport = 0;
     noisesupport = 0;
-    notifysupport = 0;
+    waitsupport = 0;
     lastTransition = new Date();
     if(Session.get("recording")) {
     	log_event();
@@ -97,7 +97,7 @@
        navigator.vibrate(500);
      }
   */
-     goToState(States.NOTIFIED);
+     
    }
 
    function log_event() {
@@ -346,28 +346,40 @@
 
         if (e1.silence && e2.silence) {
           switch (timestate) {
-            // if idle then track support for transition to WT1
+            // if idle then track support for transition to WAITING_TEACHER
             case States.STUDENT:
+            	silencesupport += 1;
+            	if(silencesupport > minsupport) {
+            		goToState(States.CADENCE_STUDENT);
+            	}
+            	break;
             case States.TEACHER:
               silencesupport += 1;
               if (silencesupport > minsupport) {
-                goToState(States.CADENCE);
+                goToState(States.CADENCE_TEACHER);
               }
               break;
 
-            case States.CADENCE:
+            case States.CADENCE_TEACHER:
               if (tdiff > cadenceTime) {
-                goToState(States.WT1);
+                goToState(States.WAITING_TEACHER);
               }
               break;
 
-              // if waiting track, wait and track support for 
-            case States.WT1:
+            case States.CADENCE_STUDENT:
+            	if(tdiff > cadenceTime) {
+            		goToState(States.WAITING_STUDENT);
+            	}
+            	break;
+
+              // if waiting track, wait and track support for
+            case States.WAITING_STUDENT:
+            case States.WAITING_TEACHER:
               if (tdiff + cadenceTime > waittime) {
-                notifysupport += 1
+                waitsupport += 1;
               }
-              if (notifysupport > minsupport) {
-                notify();
+              if (waitsupport > minsupport) {
+                goToState(States.SILENCE);
               }
               break;
           }
@@ -403,9 +415,11 @@
               }
               break;
 
-            case States.NOTIFIED:
-            case States.CADENCE:
-            case States.WT1:
+            case States.SILENCE:
+            case States.CADENCE_TEACHER:
+            case States.CADENCE_STUDENT:
+            case States.WAITING_TEACHER:
+            case States.WAITING_STUDENT:
               //go to ts 0
               noisesupport += 1;
               if (noisesupport > minsupport) {
@@ -429,7 +443,7 @@
           "timestate": reverseState(timestate),
           "silencesupport": silencesupport,
           "noisesupport": noisesupport,
-          "notifysupport": notifysupport,
+          "waitsupport": waitsupport,
           "tdiff": tdiff
         }); 
       } 
