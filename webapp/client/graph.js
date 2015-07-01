@@ -44,6 +44,8 @@
   Session.set("lastState", States.TEACHER);
   Session.set("currState", States.WT1);
 
+
+
   function lerp(from, to, by) {
     return form + (to - from) * by;
   }
@@ -79,6 +81,7 @@
     noisesupport = 0;
     notifysupport = 0;
     lastTransition = new Date();
+    log_event();
   }
 
   /* 
@@ -93,6 +96,37 @@
      }
   */
      goToState(States.NOTIFIED);
+   }
+
+   function log_event() {
+   	message = "http://gcf.cmu-tbank.com/david/add_classroom_value.php?";
+   	//"timestamp=12345&eventType=abc&speakerX=1&speakerY=2&condition=blah&sessionID=session1";
+   	
+   	//timestamp
+   	message += "timestamp="+Date.now().UTC();
+	
+   	//event type
+	message += "eventType="+encodeURIComponent(reverseState(Session.get("currState")));
+	
+	//intersection
+	inter = Session.get("intersection");
+   	if(inter){
+   		message += "speakerX"+inter.x;
+   		message += "speakerY"+inter.y;
+   	}
+   	else {
+   		message += "speakerX=NA";
+   		message += "speakerY=NA";
+   	}
+
+	//condition
+   	message += "condition="+encodeURIComponent(Session.get("condition"));
+
+   	//session
+   	message += "sessionID="+encodeURIComponent(Session.get("sessionID"));
+
+	xmlhttp.open("POST",message,true);
+	xmlhttp.send();
    }
 
   Template.graph.rendered = function() {
@@ -165,6 +199,7 @@
     var closedLineFunction = function(d) {
       return lineFunction(d) + "Z";
     };
+
 
     Deps.autorun(function() {
 
