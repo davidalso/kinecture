@@ -1,6 +1,4 @@
-Session.set("condition",false);
-Session.set("sessionID",false);
-Session.set("recording",false);
+
 lineIntersection = function(line1StartX, line1StartY, line1EndX, line1EndY, line2StartX, line2StartY, line2EndX, line2EndY) {
   // http://jsfiddle.net/justin_c_rounds/Gd2S2/light/
   // if the lines intersect, the result contains the x and y of the intersection (treating the lines as infinite) and booleans for whether line segment 1 or line segment 2 contain the point
@@ -29,13 +27,16 @@ lineIntersection = function(line1StartX, line1StartY, line1EndX, line1EndY, line
   return result;
 };
 
-var States = {
-  TEACHER: 0,
-  CADENCE: 4,
-  WT1: 1,
-  NOTIFIED: 2,
-  STUDENT: 3
-};
+
+  var States = {
+    TEACHER: 0,
+    STUDENT: 3,
+    CADENCE_TEACHER: 4,
+    CADENCE_STUDENT: 6,
+    WAITING_TEACHER: 1,
+    WAITING_STUDENT: 5,
+    SILENCE: 2,
+  };
 
 Template.body.helpers({
   kinects: function() {
@@ -77,7 +78,111 @@ Template.body.helpers({
   sessionID:function() {
     return Session.get("sessionID");
   },
-  silentClass:function() {
+  greenSilentStyle:function() {
+    if(Session.get("condition") == "A") {
+        return "opactiy:1.0";
+    }
+    else if(Session.get("condition") == "B") {
+      return "opacity:0.0";
+    }
+    else {
+      console.log("unknown condition"+Session.get("condition"));
+      return "opacity:1.0";
+    }
+  },
+  blueSilentStyle:function() {
+    if(Session.get("condition") == "A") {
+      return "opacity:0.0";
+    }
+    else if(Session.get("condition") == "B") {
+      return "opacity:1.0";
+    }
+    else {
+      console.log("unknown condition"+Session.get("condition"));
+      return "opacity:1.0";
+    }
+  },
+  greenSpeakClass:function() {
+    if(Session.get("condition") == "A") {
+      return "";
+    }
+    else if(Session.get("condition") == "B") {
+      switch(Session.get("currState")) {
+        case States.CADENCE_STUDENT:
+        case States.WAITING_STUDENT:
+          return "icon-anim";
+        default:
+          return "";
+      }
+    }
+    else {
+      console.log("unknown condition"+Session.get("condition"));
+      return "";
+    }
+  },
+  greenSpeakStyle:function() {
+    if(Session.get("condition") == "A"){
+      return "opacity:0.0";
+    }
+    else if (Session.get("condition") == "B") {
+      if(Session.get("currState") == States.STUDENT) {
+        return "opacity:1.0";
+      }
+      else {
+        return "opacity:0.0";
+      }
+    }
+    else {
+      console.log("unknown condition"+Session.get("condition"));
+      return "opacity:1.0";
+    }
+  },
+  redSpeakClass:function() {
+    if(Session.get("condition") == "A") {
+      switch(Session.get("currState")) {
+        case States.CADENCE_STUDENT:
+        case States.CADENCE_TEACHER:
+        case States.WAITING_STUDENT:
+        case States.WAITING_TEACHER:
+          return "icon-anim";
+        default: 
+          return "";
+      }
+    }
+    else if (Session.get("condition") == "B") {
+      return "";
+    }
+    else {
+      console.log("unknown condition"+Session.get("condition"));
+      return "";
+    }
+  },
+  redSpeakStyle:function() {
+    if(Session.get("condition") == "A") {
+      switch(Session.get("currState")) {
+        case States.TEACHER:
+        case States.STUDENT:
+          return "opacity:1.0";
+        default:
+          return "opacity:0.0";
+      }
+    }
+    else if(Session.get("condition") == "B"){
+      switch(Session.get("currState")) {
+        case States.TEACHER:
+        case States.CADENCE_TEACHER:
+        case States.WAITING_TEACHER:
+          return "opacity:1.0";
+        default:
+          return "opacity:0.0";
+      }
+    }
+    else {
+      console.log("unknown condition"+Session.get("condition"));
+      return "opactiy:1.0";
+    }
+  }
+ /* silentClass:function() {
     return "";
     //return Session.get("silentClass");
   },
@@ -106,7 +211,7 @@ Template.body.helpers({
       //Use this and above for Test Condition A
       // case WT1:
       //   return "opacity:1.0;"
-      // case States.NOTIFIED:
+      // case States.SILENCE:
       //   return "opacity:1.0;"
       
     }
@@ -130,7 +235,7 @@ Template.body.helpers({
         return "opacity:0;";
     }
     //return Session.get("taStyle");
-  }
+  }*/
 });
 
 Template.body.events({
@@ -142,13 +247,17 @@ Template.body.events({
   }
 });
 
-
+Template.record.onRendered(function() {
+  Session.set("condition","A");
+  Session.set("sessionID","");
+  Session.set("recording",false);
+});
 
 Template.record.helpers({
    recording:function() {
     return Session.get("recording");
   },
-  sessionID:function() {
+    sessionID:function() {
     return Session.get("sessionID");
   }
 });
@@ -161,11 +270,14 @@ Template.record.events({
     Session.set("condition",$(evt.target).val());
   },
   "click #start-record":function() {
-    if(!(Session.get("condition") && Session.get("sessionID"))) {
+    console.log(Session.get("sessionID"));
+    if(Session.get("sessionID")!= "") {
+      console.log("starting recording");
       Session.set("recording",true);
     }
   },
   "click #stop-record":function() {
+    console.log("stoping recording");
     Session.set("recording",false);
   }
 });
