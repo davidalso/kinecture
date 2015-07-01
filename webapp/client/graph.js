@@ -44,6 +44,8 @@
   Session.set("lastState", States.TEACHER);
   Session.set("currState", States.WT1);
 
+
+
   function lerp(from, to, by) {
     return form + (to - from) * by;
   }
@@ -79,6 +81,9 @@
     noisesupport = 0;
     notifysupport = 0;
     lastTransition = new Date();
+    if(Session.get("recording")) {
+    	log_event();
+	}
   }
 
   /* 
@@ -93,6 +98,45 @@
      }
   */
      goToState(States.NOTIFIED);
+   }
+
+   function log_event() {
+   	url = "http://gcf.cmu-tbank.com/david/add_classroom_value.php";
+   	dict = {};
+   	//"timestamp=12345&eventType=abc&speakerX=1&speakerY=2&condition=blah&sessionID=session1";
+
+   	d = new Date();
+
+   	//timestamp
+   	dict["timestamp"]=d.getTime();
+	
+   	//event type
+	dict["eventType"]=encodeURIComponent(reverseState(Session.get("currState")));
+	
+	//intersection
+	inter = Session.get("intersection");
+   	if(inter){
+   		dict["speakerX"]=inter.x;
+   		dict["speakerY"]=inter.y;
+   	}
+   	else {
+   		dict["speakerX"]="NA";
+   		dict["speakerY"]="NA";
+   	}
+
+	//condition
+   	dict["condition"]=encodeURIComponent(Session.get("condition"));
+
+   	//session
+   	dict["sessionID"]=encodeURIComponent(Session.get("sessionID"));
+
+   	HTTP.call("POST",url,
+	   	{data:dict},
+	   	function(error,result){
+	   		if(error) {
+	   			console.log("HTTP post error "+error);
+	   		}
+	   	});
    }
 
   Template.graph.rendered = function() {
@@ -165,6 +209,7 @@
     var closedLineFunction = function(d) {
       return lineFunction(d) + "Z";
     };
+
 
     Deps.autorun(function() {
 

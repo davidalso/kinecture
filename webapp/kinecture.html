@@ -4,26 +4,19 @@
 
 <body>
   <div class="container">
-    
-    <div>
-      <br>
-      <br>
-    </div>
-   
-    <img class="icon-screen" >
 
     <img class="icon-screen-trans {{silentClass}}" src="artwork/No-Talk-icon-v2.jpg" style="{{silentStyle}}">
     <img class="icon-screen-trans {{studentClass}}" src="artwork/Student-speak-v2.jpg" style="{{studentStyle}}">
     <img class="icon-screen-trans  {{taClass}}" src="artwork/TA-Talk-v2.jpg" style="{{taStyle}}">
-    
-
-    <div>
-      <br>
-      <br>
-    </div>
 
     <!-- <div id="notification-target" class="note-small" style="background-color:{{notificationColor}}"></div> -->
-<div>Notification State: {{notestate}}</div>
+    <div id="spacer"></div>
+
+    {{> record}}
+
+    {{#unless recording}}
+    <div>Notification State: {{notestate}}</div>
+    
     <header>
       <h1>Kinect Angles</h1>
     </header>
@@ -67,8 +60,34 @@
     </div>
 
     {{> graph}}
+
+    {{/unless}}
   </div>
 </body>
+
+<template name="record">
+  <form class="form-inline" role="form">
+    <div class="form-group">
+    {{#if recording}}
+      Session: {{sessionID}}
+      <button type="button" class="btn form-control" id="stop-record">Stop</button>
+    {{else}}
+      <label>Condition:
+        <select class="form-control" id="condition-select">
+          <option value="A">A</option>
+          <option value="B">B</option>
+        </select>
+      </label>
+      <label>
+        Session ID:
+        <input class="form-control" type="text" id="session-input">
+      </label>
+        <button type="button" class="btn form-control" id="start-record">Start</button>
+      {{/if}}
+    </div>
+  </form>
+
+</template>
 
 <template name="controls">
   <form class="form-inline" role="form">
