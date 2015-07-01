@@ -1,3 +1,6 @@
+Session.set("condition",false);
+Session.set("sessionID",false);
+Session.set("recording",false);
 lineIntersection = function(line1StartX, line1StartY, line1EndX, line1EndY, line2StartX, line2StartY, line2EndX, line2EndY) {
   // http://jsfiddle.net/justin_c_rounds/Gd2S2/light/
   // if the lines intersect, the result contains the x and y of the intersection (treating the lines as infinite) and booleans for whether line segment 1 or line segment 2 contain the point
@@ -68,6 +71,12 @@ Template.body.helpers({
   noteIconSilent:function() {
     return Session.get("noteIconSilent");
   },
+  recording:function() {
+    return Session.get("recording");
+  },
+  sessionID:function() {
+    return Session.get("sessionID");
+  },
   silentClass:function() {
     return "";
     //return Session.get("silentClass");
@@ -131,4 +140,32 @@ Template.body.events({
   "click #hideAdminPanel": function() {
     Session.set("showAdminPanel", false);
   }
-})
+});
+
+
+
+Template.record.helpers({
+   recording:function() {
+    return Session.get("recording");
+  },
+  sessionID:function() {
+    return Session.get("sessionID");
+  }
+});
+
+Template.record.events({
+  "change #session-input":function(evt) {
+    Session.set("sessionID",$(evt.target).val());
+  },
+  "change #condition-select":function(evt) {
+    Session.set("condition",$(evt.target).val());
+  },
+  "click #start-record":function() {
+    if(!(Session.get("condition") && Session.get("sessionID"))) {
+      Session.set("recording",true);
+    }
+  },
+  "click #stop-record":function() {
+    Session.set("recording",false);
+  }
+});

@@ -81,7 +81,9 @@
     noisesupport = 0;
     notifysupport = 0;
     lastTransition = new Date();
-    log_event();
+    if(Session.get("recording")) {
+    	log_event();
+	}
   }
 
   /* 
@@ -99,34 +101,42 @@
    }
 
    function log_event() {
-   	message = "http://gcf.cmu-tbank.com/david/add_classroom_value.php?";
+   	url = "http://gcf.cmu-tbank.com/david/add_classroom_value.php";
+   	dict = {};
    	//"timestamp=12345&eventType=abc&speakerX=1&speakerY=2&condition=blah&sessionID=session1";
-   	
+
+   	d = new Date();
+
    	//timestamp
-   	message += "timestamp="+Date.now().UTC();
+   	dict["timestamp"]=d.getTime();
 	
    	//event type
-	message += "eventType="+encodeURIComponent(reverseState(Session.get("currState")));
+	dict["eventType"]=encodeURIComponent(reverseState(Session.get("currState")));
 	
 	//intersection
 	inter = Session.get("intersection");
    	if(inter){
-   		message += "speakerX"+inter.x;
-   		message += "speakerY"+inter.y;
+   		dict["speakerX"]=inter.x;
+   		dict["speakerY"]=inter.y;
    	}
    	else {
-   		message += "speakerX=NA";
-   		message += "speakerY=NA";
+   		dict["speakerX"]="NA";
+   		dict["speakerY"]="NA";
    	}
 
 	//condition
-   	message += "condition="+encodeURIComponent(Session.get("condition"));
+   	dict["condition"]=encodeURIComponent(Session.get("condition"));
 
    	//session
-   	message += "sessionID="+encodeURIComponent(Session.get("sessionID"));
+   	dict["sessionID"]=encodeURIComponent(Session.get("sessionID"));
 
-	xmlhttp.open("POST",message,true);
-	xmlhttp.send();
+   	HTTP.call("POST",url,
+	   	{data:dict},
+	   	function(error,result){
+	   		if(error) {
+	   			console.log("HTTP post error "+error);
+	   		}
+	   	});
    }
 
   Template.graph.rendered = function() {
