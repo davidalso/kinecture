@@ -278,6 +278,7 @@ Template.record.events({
   },
   "click #stop-record":function() {
     console.log("stoping recording");
+    Session.set("sessionID","");
     Session.set("recording",false);
   }
 });
