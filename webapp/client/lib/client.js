@@ -38,6 +38,10 @@ lineIntersection = function(line1StartX, line1StartY, line1EndX, line1EndY, line
     SILENCE: 2,
   };
 
+  var showStyle = "height:525px; width:525px; top:0px;";
+  var hideStyle = "height:0px; width:0px; top:262.5px;";
+  var animClass = "shrink-anim";
+
 Template.body.helpers({
   kinects: function() {
     return Kinects.find({});
@@ -78,31 +82,15 @@ Template.body.helpers({
   sessionID:function() {
     return Session.get("sessionID");
   },
-  greenSilentStyle:function() {
-    if(Session.get("condition") == "A") {
-        return "opactiy:1.0";
-    }
-    else if(Session.get("condition") == "B") {
-      return "opacity:0.0";
-    }
-    else {
-      console.log("unknown condition"+Session.get("condition"));
-      return "opacity:1.0";
-    }
-  },
-  blueSilentStyle:function() {
+  blueDotStyle:function() {
     if(Session.get("condition") == "A") {
       return "opacity:0.0";
     }
     else if(Session.get("condition") == "B") {
       return "opacity:1.0";
     }
-    else {
-      console.log("unknown condition"+Session.get("condition"));
-      return "opacity:1.0";
-    }
   },
-  greenSpeakClass:function() {
+  greenDotClass:function() {
     if(Session.get("condition") == "A") {
       return "";
     }
@@ -110,41 +98,33 @@ Template.body.helpers({
       switch(Session.get("currState")) {
         case States.CADENCE_STUDENT:
         case States.WAITING_STUDENT:
-          return "icon-anim";
+          return animClass;
         default:
           return "";
       }
     }
-    else {
-      console.log("unknown condition"+Session.get("condition"));
-      return "";
-    }
   },
-  greenSpeakStyle:function() {
+  greenDotStyle:function() {
     if(Session.get("condition") == "A"){
-      return "opacity:0.0";
+      return howStyle;
     }
     else if (Session.get("condition") == "B") {
       if(Session.get("currState") == States.STUDENT) {
-        return "opacity:1.0";
+        return showStyle;
       }
       else {
-        return "opacity:0.0";
+        return hideStyle;
       }
     }
-    else {
-      console.log("unknown condition"+Session.get("condition"));
-      return "opacity:1.0";
-    }
   },
-  redSpeakClass:function() {
+  redDotClass:function() {
     if(Session.get("condition") == "A") {
       switch(Session.get("currState")) {
         case States.CADENCE_STUDENT:
         case States.CADENCE_TEACHER:
         case States.WAITING_STUDENT:
         case States.WAITING_TEACHER:
-          return "icon-anim";
+          return animClass;
         default: 
           return "";
       }
@@ -152,19 +132,15 @@ Template.body.helpers({
     else if (Session.get("condition") == "B") {
       return "";
     }
-    else {
-      console.log("unknown condition"+Session.get("condition"));
-      return "";
-    }
   },
-  redSpeakStyle:function() {
+  redDotStyle:function() {
     if(Session.get("condition") == "A") {
       switch(Session.get("currState")) {
         case States.TEACHER:
         case States.STUDENT:
-          return "opacity:1.0";
+          return showStyle;
         default:
-          return "opacity:0.0";
+          return hideStyle;
       }
     }
     else if(Session.get("condition") == "B"){
@@ -172,14 +148,31 @@ Template.body.helpers({
         case States.TEACHER:
         case States.CADENCE_TEACHER:
         case States.WAITING_TEACHER:
-          return "opacity:1.0";
+          return showStyle;
         default:
-          return "opacity:0.0";
+          return hideStyle;
       }
     }
-    else {
-      console.log("unknown condition"+Session.get("condition"));
-      return "opactiy:1.0";
+  },
+  waveStyle:function() {
+    switch(Session.get("currState")){
+      case States.TEACHER:
+      case States.STUDENT:
+        return "opacity:1.0";
+      default:
+        return "opacity:0.0";
+    }
+  },
+
+  waveClass:function() {
+    switch(Session.get("currState")){
+      case States.CADENCE_TEACHER:
+      case States.CADENCE_STUDENT:
+      case States.WAITING_STUDENT:
+      case States.WAITING_TEACHER:
+        return "waves-anim";
+      default:
+        return "";
     }
   }
  /* silentClass:function() {
@@ -187,13 +180,13 @@ Template.body.helpers({
     //return Session.get("silentClass");
   },
   silentStyle:function() {
-    return "opacity:1.0";
+    return showStyle;
     //return Session.get("silentStyle");
   },
   studentClass:function() {
     if ((Session.get("lastState") == States.STUDENT && Session.get("currState") == States.CADENCE) ||
       (Session.get("lastState") == States.CADENCE && Session.get("currState") == States.WT1)){
-      return "icon-anim";
+      return animClass;
     }
     else {
       return "";
@@ -220,7 +213,7 @@ Template.body.helpers({
   taClass:function() {
     if ((Session.get("lastState") == States.TEACHER && Session.get("currState") == States.CADENCE) ||
       (Session.get("lastState") == States.CADENCE && Session.get("currState") == States.WT1)){
-      return "icon-anim";
+      return animClass;
     }
     else {
       return "";
