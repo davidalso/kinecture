@@ -105,36 +105,36 @@
    	dict = {};
    	//"timestamp=12345&eventType=abc&speakerX=1&speakerY=2&condition=blah&sessionID=session1";
 
-   	d = new Date();
+   	var d = new Date();
 
    	//timestamp
    	dict["timestamp"]=d.getTime();
 	
    	//event type
-	dict["eventType"]=encodeURIComponent(reverseState(Session.get("currState")));
-	
-	//intersection
-	inter = Session.get("intersection");
-   	if(inter){
-   		dict["speakerX"]=inter.x;
-   		dict["speakerY"]=inter.y;
-   	}
-   	else {
-   		dict["speakerX"]="NA";
-   		dict["speakerY"]="NA";
-   	}
+  	dict["eventType"]=encodeURIComponent(reverseState(Session.get("currState")));
+  	
+  	//intersection
+  	inter = Session.get("intersection");
+     	if(inter){
+     		dict["speakerX"]=inter.x;
+     		dict["speakerY"]=inter.y;
+     	}
+     	else {
+     		dict["speakerX"]="NA";
+     		dict["speakerY"]="NA";
+     	}
 
 	//condition
    	dict["condition"]=encodeURIComponent(Session.get("condition"));
 
    	//session
    	dict["sessionID"]=encodeURIComponent(Session.get("sessionID"));
-
-   	HTTP.call("POST",url,
-	   	{data:dict},
+    console.log("sending",dict);
+    HTTP.call("GET",url,
+	   	{params:dict},
 	   	function(error,result){
 	   		if(error) {
-	   			console.log("HTTP post error "+error);
+	   			console.log("HTTP POST error: ",result,error);
 	   		}
 	   	});
    }
