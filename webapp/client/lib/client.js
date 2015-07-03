@@ -38,7 +38,7 @@ lineIntersection = function(line1StartX, line1StartY, line1EndX, line1EndY, line
     SILENCE: 2,
   };
 
-  var showStyle = "height:525px; width:525px; top:0px;";
+  var showStyle = "height:475px; width:475px; top:25px;";
   var hideStyle = "height:0px; width:0px; top:262.5px;";
   var animClass = "shrink-anim";
 

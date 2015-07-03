@@ -20,19 +20,19 @@
 }
 
 .waves-anim {
-  transition: opacity 1s cubic-bezier(1,0,.64,.71);
-  -moz-transition: opacity 1s cubic-bezier(1,0,.64,.71);
-  -webkit-transition: opacity 1s cubic-bezier(1,0,.64,.71);
-  -o-transition: opacity 1s cubic-bezier(1,0,.64,.71);
+  transition: opacity 3s cubic-bezier(1,0,.64,.71);
+  -moz-transition: opacity 3s cubic-bezier(1,0,.64,.71);
+  -webkit-transition: opacity 3s cubic-bezier(1,0,.64,.71);
+  -o-transition: opacity 3s cubic-bezier(1,0,.64,.71);
 }
 
 .icon-screen {
-  width:  525px;
-  height: 525px;
+  width:  475px;
+  height: 475px;
   background-color: none;
   background-image: none !important;  
   position: absolute;
-  top:0px;
+  top:25px;
   left: 0;
   right: 0;
   margin-left: auto;
