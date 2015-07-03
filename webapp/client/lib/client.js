@@ -174,6 +174,34 @@ Template.body.helpers({
       default:
         return "";
     }
+  },
+
+  barClass:function() {
+    switch(Session.get("currState")){
+      case States.CADENCE_TEACHER:
+      case States.CADENCE_STUDENT:
+      case States.WAITING_STUDENT:
+      case States.WAITING_TEACHER:
+        return "linear-anim";
+      default:
+        return "";
+    }
+  },
+
+  barStyle:function() {
+    switch(Session.get("currState")){
+      case States.TEACHER:
+      case States.STUDENT:
+      case States.SILENCE:
+        return "width:0%";
+      case States.CADENCE_TEACHER:
+      case States.CADENCE_STUDENT:
+      case States.WAITING_TEACHER:
+      case States.WAITING_STUDENT:
+        return "width:100%";
+      default:
+        return "width:100%";
+    }
   }
  /* silentClass:function() {
     return "";

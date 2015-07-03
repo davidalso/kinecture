@@ -10,9 +10,14 @@
     <img class="icon-screen {{greenDotClass}}" src="artwork/circle-green.png" style="{{greenDotStyle}}">
     <img class="icon-screen {{redDotClass}}" src="artwork/circle-orange.png" style="{{redDotStyle}}">
 
+
+
     <!-- <div id="notification-target" class="note-small" style="background-color:{{notificationColor}}"></div> -->
     <div id="spacer"></div>
-
+    <div id="trough">
+      <div id="loading-bar" class="{{barClass}}" style="{{barStyle}}"></div>
+    </div>
+    
     {{> record}}
 
     {{#unless recording}}
