@@ -293,12 +293,46 @@ Template.record.events({
   "click #start-record":function() {
     console.log(Session.get("sessionID"));
     if(Session.get("sessionID")!= "") {
-      console.log("starting recording");
+      url = "http://gcf.cmu-tbank.com/david/add_classroom_value.php";
+      dict = {};
+      //"timestamp=12345&eventType=abc&speakerX=1&speakerY=2&condition=blah&sessionID=session1";
+      var d = new Date();
+      dict["timestamp"]=d.getTime();
+      dict["eventType"]="Session_Start";
+      dict["speakerX"]="NA";
+      dict["speakerY"]="NA";
+      dict["condition"]=encodeURIComponent(Session.get("condition"));
+      dict["sessionID"]=encodeURIComponent(Session.get("sessionID"));
+      
+      HTTP.call("GET",url,
+        {params:dict},
+        function(error,result){
+          if(error) {
+            console.log("HTTP GET error: ",result,error);
+          }
+        });
       Session.set("recording",true);
     }
   },
   "click #stop-record":function() {
-    console.log("stoping recording");
+    url = "http://gcf.cmu-tbank.com/david/add_classroom_value.php";
+    dict = {};
+    //"timestamp=12345&eventType=abc&speakerX=1&speakerY=2&condition=blah&sessionID=session1";
+    var d = new Date();
+    dict["timestamp"]=d.getTime();
+    dict["eventType"]="Session_End";
+    dict["speakerX"]="NA";
+    dict["speakerY"]="NA";
+    dict["condition"]=encodeURIComponent(Session.get("condition"));
+    dict["sessionID"]=encodeURIComponent(Session.get("sessionID"));
+    
+    HTTP.call("GET",url,
+      {params:dict},
+      function(error,result){
+        if(error) {
+          console.log("HTTP GET error: ",result,error);
+        }
+      });
     Session.set("sessionID","");
     Session.set("recording",false);
   }
