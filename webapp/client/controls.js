@@ -19,6 +19,7 @@ Template.controls.events({
     var cursor = Kinects.find({});
     if (!cursor.count()) return;
 
+   
     var randomState = Number(Session.get("randomState"));
     var CONFIDENCE_STAGES = [0, 0.3, 0.7, 0.9, 0.95, 0.99, 1.0];
     var randomStateMod = randomState % CONFIDENCE_STAGES.length;
@@ -31,9 +32,11 @@ Template.controls.events({
 
     Session.set("randomState", randomState + 1);
 
-    var confidence = CONFIDENCE_STAGES[randomStateMod];
-    confidence += (Math.random() - 0.5) * 0.1;
-    confidence = Math.max(Math.min(confidence, 1.0), 0.0);
+    // var confidence = CONFIDENCE_STAGES[randomStateMod];
+    // confidence += (Math.random() - 0.5) * 0.1;
+    // confidence = Math.max(Math.min(confidence, 1.0), 0.0);
+
+    var confidence = 0.9;
 
     cursor.forEach(function (row) {
         var silence = Math.random() < 0.5;
@@ -46,7 +49,8 @@ Template.controls.events({
               confidence: confidence,
               loudness: Math.random() / 1000.0,
               speech: !silence && Math.random() < 0.5,
-              custom_speech: !silence && Math.random() < 0.5,
+              // custom_speech: !silence && Math.random() < 0.5,
+              custom_speech: false,
               silence: silence,
               bins: [1,2,3,4]
             }

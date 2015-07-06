@@ -57,11 +57,11 @@
 }
 
 #trough {
-  width:1024px;
-  height:40px;
+  width:100%;
+  height:500px;
   margin-right: auto;
   margin-left: auto;
-  background-color: lightgrey;
+  background-color: orange;
 }
 
 #loading-bar {
