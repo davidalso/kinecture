@@ -378,9 +378,9 @@
         delay = tb.getTime() - ta.getTime();
 
         // COMMENTING OUT TO SAVE PROCESSING
-        // delayTotal += delay;
-        // delayCount += 1;
-        // var delavg = delayTotal / delayCount;
+        delayTotal += delay;
+        delayCount += 1;
+        var delavg = delayTotal / delayCount;
 
         Session.set("delayframe", delay);
         Session.set("delayaverage", delavg);
