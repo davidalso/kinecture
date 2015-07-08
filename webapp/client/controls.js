@@ -16,6 +16,9 @@ Template.controls.events({
   },
 
   "click #randomize": function() {
+    
+
+
     var cursor = Kinects.find({});
     if (!cursor.count()) return;
 

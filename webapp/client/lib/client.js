@@ -177,31 +177,81 @@ Template.body.helpers({
   },
 
   barClass:function() {
-    switch(Session.get("currState")){
-      case States.CADENCE_TEACHER:
-      case States.CADENCE_STUDENT:
-      case States.WAITING_STUDENT:
-      case States.WAITING_TEACHER:
-        return "linear-anim";
-      default:
-        return "";
+    if(Session.get("condition") == "A") {
+      switch(Session.get("currState")){
+        case States.CADENCE_TEACHER:
+        case States.WAITING_TEACHER:
+        case States.CADENCE_STUDENT:
+        case States.WAITING_STUDENT:
+          return "linear-anim";
+        default:
+          return "";
+      }
     }
+
+    else if(Session.get("condition") == "B") {
+       switch(Session.get("currState")){
+        case States.CADENCE_STUDENT:
+        case States.WAITING_STUDENT:
+          return "linear-anim";
+        default:
+          return "";
+      }
+   }
   },
 
-  barStyle:function() {
-    switch(Session.get("currState")){
-      case States.TEACHER:
-      case States.STUDENT:
-      case States.SILENCE:
-        return "width:0%";
-      case States.CADENCE_TEACHER:
-      case States.CADENCE_STUDENT:
-      case States.WAITING_TEACHER:
-      case States.WAITING_STUDENT:
-        return "width:100%";
-      default:
-        return "width:100%";
+  troughStyle:function() {
+    if(Session.get("condition") == "A") {
+      return "background-color: #ff7f00"
     }
+    else if(Session.get("condition") == "B") {
+      return "background-color: #54bf4b"
+
+    }
+
+  },
+
+  barStyle:function() {    
+     if(Session.get("condition") == "A") {
+      switch(Session.get("currState")){
+        case States.TEACHER:
+        case States.STUDENT:
+          return "width:0%;";
+        case States.SILENCE:
+          return "width:100%; background-color: #54bf4b;";
+        case States.CADENCE_TEACHER:
+        case States.CADENCE_STUDENT:
+          return "background-color: #ff7f00; width:100%;";
+        case States.WAITING_TEACHER:
+        case States.WAITING_STUDENT:
+          return "background-color: #54bf4b; width:100%;";
+        default:
+          return "width:100%;";
+      }
+    }
+    else if(Session.get("condition") == "B") {
+     switch(Session.get("currState")){
+        case States.TEACHER:
+        case States.WAITING_TEACHER:
+        case States.CADENCE_TEACHER:
+          return "width:100%; background-color: #ff7f00;";
+        
+        case States.STUDENT:
+          return "width:0%; background-color: #54bf4b;";
+        
+        case States.SILENCE:
+          return "width:100%; background-color: #377eb8;";
+
+        case States.CADENCE_STUDENT:
+          return "background-color: #54bf4b; width:100%;";
+        case States.WAITING_STUDENT:
+          return "background-color: #377eb8; width:100%;";
+        
+        default:
+          return "width:100%;";
+      } 
+    }
+
   }
  /* silentClass:function() {
     return "";

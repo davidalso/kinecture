@@ -83,7 +83,7 @@
     lastTransition = new Date();
     if(Session.get("recording")) {
     	log_event();
-	}
+	 }
   }
 
   /* 
