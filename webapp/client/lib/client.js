@@ -232,13 +232,13 @@ Template.body.helpers({
     else if(Session.get("condition") == "B") {
      switch(Session.get("currState")){
         case States.TEACHER:
-        case States.WAITING_TEACHER:
         case States.CADENCE_TEACHER:
           return "width:100%; background-color: #ff7f00;";
         
         case States.STUDENT:
           return "width:0%; background-color: #54bf4b;";
         
+        case States.WAITING_TEACHER:
         case States.SILENCE:
           return "width:100%; background-color: #377eb8;";
 
