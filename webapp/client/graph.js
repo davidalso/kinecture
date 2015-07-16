@@ -268,6 +268,7 @@
       var roomLength = defaultRoom.length;
       var roomWidth = defaultRoom.width;
       var roomTAzone = defaultRoom.TAzone;
+      var roomThreshold = defaultRoom.threshold;
 
       // w += 50;
       h = roomLength * w / roomWidth;
@@ -368,10 +369,19 @@
         var loudness = (e1.loudness + e2.loudness) / 2;
         var loudness_scaled = Math.min(loudness * 500.0, 1.0); // usually loudness <= 0.1
         var r = loudness_scaled * 20.0 + 5.0;
+        var sound = r * 10;
+        Session.set("sound", sound);
 
+        
         var intersect = lineIntersection(e1.x, e1.y, e1.x2, e1.y2, e2.x, e2.y, e2.x2, e2.y2);
-
-        Session.set("intersection", intersect);
+         
+        if (sound > roomThreshold) {
+          Session.set("intersection", intersect);
+        } 
+        else {
+          Session.set("intersection", false);
+          intersect = false;
+        }
 
         ta = tb;
         tb = new Date();
@@ -389,6 +399,7 @@
         tdiff = Math.abs(now.getTime() - lastTransition.getTime());
 
         if (e1.silence && e2.silence) {
+          Session.set("intersection", false);
           switch (timestate) {
             // if idle then track support for transition to WAITING_TEACHER
             case States.STUDENT:
@@ -420,9 +431,6 @@
             case States.WAITING_STUDENT:
             case States.WAITING_TEACHER:
               if (tdiff + cadenceTime > waittime) {
-                waitsupport += 1;
-              }
-              if (waitsupport > minsupport) {
                 goToState(States.SILENCE);
               }
               break;
@@ -433,6 +441,12 @@
         }
 
         else if (intersect) {
+          // Make intersections impossible if either of the Kinects returns silence
+          if ((e1.silence && !e2.silence) || (!e1.silence && e2.silence)) {
+            Session.set("intersection", false);
+            intersect = false;
+          }
+
           // draw a circle on the graph
           svg.select("circle")
             .attr("cx", function() {
@@ -447,13 +461,15 @@
           // follow these rules to check for evidence of state change
           switch (timestate) {
             case States.TEACHER:
-              //we've already heard noise so stay idle.
+              //we've already heard noise so stay in the same state.
+              //We could put minsupport here if we find that STUDENT is getting called too often
               if (intersect.y < (roomLength - roomTAzone)) {
                 goToState(States.STUDENT)
               }
               break;
 
             case States.STUDENT:
+              //We could put minsupport here if we find that TEACHER is getting called too often
               if (intersect.y >= (roomLength - roomTAzone)) {
                 goToState(States.TEACHER)
               }
@@ -480,11 +496,14 @@
         // when there is no intersection, don't draw a circle
         else {
           svg.select("circle").style("visibility", "hidden");
-          //This would be the place to do anything for noise detection on one side and not the other, or when two noises do not intersect
+          //This would be the place to do anything for noise detection 
+          // on one side and not the other, or when two noises do not intersect
+
         }
        
        Session.set("notestate", {
           "timestate": reverseState(timestate),
+          "sound": sound,
           "silencesupport": silencesupport,
           "noisesupport": noisesupport,
           "waitsupport": waitsupport,

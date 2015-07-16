@@ -26,7 +26,13 @@ Schemas.Room = new SimpleSchema({
     min: 0,
     decimal: true,
     defaultValue: 4,
-  }
+  },
+  threshold: {
+    type: Number,
+    min: 0,
+    decimal: true,
+    defaultValue: 0.0,
+  },
 });
 
 Rooms.attachSchema(Schemas.Room);
@@ -97,7 +103,7 @@ getDefaultRoom = function() {return Rooms.findOne({name: "default"})};
 createDefaultRoom = function() {
   if (!getDefaultRoom()) {
     console.log("creating default room");
-    Rooms.insert({name: "default", width: 10, roomLength: 9, TAzone: 2}, function(e,d) {
+    Rooms.insert({name: "default", width: 10, roomLength: 9, TAzone: 2, threshold: 0.0}, function(e,d) {
       console.log(e);
       console.log(d);
     });

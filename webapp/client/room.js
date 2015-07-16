@@ -9,6 +9,9 @@ Template.room.events({
   "change .TAzone": function() {
     Rooms.update(this._id, {$set: {TAzone: event.target.valueAsNumber}});
   },
+  "change .threshold": function() {
+    Rooms.update(this._id, {$set: {threshold: event.target.valueAsNumber}});
+  },
 });
 
 Template.room.helpers({
