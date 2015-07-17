@@ -447,50 +447,53 @@
             intersect = false;
           }
 
-          // draw a circle on the graph
-          svg.select("circle")
-            .attr("cx", function() {
-              return xScale(intersect.x);
-            })
-            .attr("cy", function() {
-              return yScale(intersect.y);
-            })
-            .style("visibility", "visible")
-            .attr("r", r);
+          else{
 
-          // follow these rules to check for evidence of state change
-          switch (timestate) {
-            case States.TEACHER:
-              //we've already heard noise so stay in the same state.
-              //We could put minsupport here if we find that STUDENT is getting called too often
-              if (intersect.y < (roomLength - roomTAzone)) {
-                goToState(States.STUDENT)
-              }
-              break;
+            // draw a circle on the graph
+            svg.select("circle")
+              .attr("cx", function() {
+                return xScale(intersect.x);
+              })
+              .attr("cy", function() {
+                return yScale(intersect.y);
+              })
+              .style("visibility", "visible")
+              .attr("r", r);
 
-            case States.STUDENT:
-              //We could put minsupport here if we find that TEACHER is getting called too often
-              if (intersect.y >= (roomLength - roomTAzone)) {
-                goToState(States.TEACHER)
-              }
-              break;
-
-            case States.SILENCE:
-            case States.CADENCE_TEACHER:
-            case States.CADENCE_STUDENT:
-            case States.WAITING_TEACHER:
-            case States.WAITING_STUDENT:
-              //go to ts 0
-              noisesupport += 1;
-              if (noisesupport > minsupport) {
-                if (intersect.y >= (roomLength - roomTAzone)) {
-                  goToState(States.TEACHER);
-                } 
-                else {
-                  goToState(States.STUDENT);
+            // follow these rules to check for evidence of state change
+            switch (timestate) {
+              case States.TEACHER:
+                //we've already heard noise so stay in the same state.
+                //We could put minsupport here if we find that STUDENT is getting called too often
+                if (intersect.y < (roomLength - roomTAzone)) {
+                  goToState(States.STUDENT)
                 }
-              }
-              break;
+                break;
+
+              case States.STUDENT:
+                //We could put minsupport here if we find that TEACHER is getting called too often
+                if (intersect.y >= (roomLength - roomTAzone)) {
+                  goToState(States.TEACHER)
+                }
+                break;
+
+              case States.SILENCE:
+              case States.CADENCE_TEACHER:
+              case States.CADENCE_STUDENT:
+              case States.WAITING_TEACHER:
+              case States.WAITING_STUDENT:
+                //go to ts 0
+                noisesupport += 1;
+                if (noisesupport > minsupport) {
+                  if (intersect.y >= (roomLength - roomTAzone)) {
+                    goToState(States.TEACHER);
+                  } 
+                  else {
+                    goToState(States.STUDENT);
+                  }
+                }
+                break;
+            }
           }
         } 
         // when there is no intersection, don't draw a circle
