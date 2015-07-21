@@ -50,7 +50,10 @@ Template.body.helpers({
     return JSON.stringify(Session.get("intersection"));
   },
   notestate: function() {
-    return JSON.stringify(Session.get("notestate"));
+    var string = JSON.stringify(Session.get("notestate"));
+    string = string.replace('timestate','event type');
+    string = string.replace(/,/g,'<br>');
+    return string;
   },
   delayframe:function() {
     return Session.get("delayframe");

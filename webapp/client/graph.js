@@ -14,6 +14,7 @@
   var cadenceTime = 1500;
   var lastTransition = new Date();
 
+
   // timestate 0 <- idle
   // timestate 1 <- double_silence
   // timestate 2 <- noted
@@ -50,6 +51,7 @@
     return form + (to - from) * by;
   }
 
+  // What is this? Why "stat"? Is it reporting a "status"?
   function reverseState(stat) {
     switch(stat){
       case States.TEACHER:
@@ -369,7 +371,11 @@
         var loudness = (e1.loudness + e2.loudness) / 2;
         var loudness_scaled = Math.min(loudness * 500.0, 1.0); // usually loudness <= 0.1
         var r = loudness_scaled * 20.0 + 5.0;
-        var sound = r * 10;
+        
+        // For human comprehension
+        var LeftSound = (e2.loudness * 100000.0  + 5.0) | 0
+        var RightSound = (e1.loudness * 100000.0  + 5.0) | 0
+        var sound = (((e1.loudness + e2.loudness) / 2) * 100000.0  + 5.0) | 0
         Session.set("sound", sound);
 
         
@@ -507,6 +513,8 @@
        Session.set("notestate", {
           "timestate": reverseState(timestate),
           "sound": sound,
+          "LeftSound": LeftSound,
+          "RightSound": RightSound,
           "silencesupport": silencesupport,
           "noisesupport": noisesupport,
           "waitsupport": waitsupport,
