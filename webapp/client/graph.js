@@ -83,9 +83,9 @@
     noisesupport = 0;
     waitsupport = 0;
     lastTransition = new Date();
-    if(Session.get("recording")) {
-    	log_event();
-	 }
+    // if(Session.get("recording")) {
+    // 	log_event();
+	  // }
   }
 
   /* 
@@ -376,7 +376,6 @@
         var LeftSound = (e2.loudness * 100000.0  + 5.0) | 0
         var RightSound = (e1.loudness * 100000.0  + 5.0) | 0
         var sound = (((e1.loudness + e2.loudness) / 2) * 100000.0  + 5.0) | 0
-        Session.set("sound", sound);
 
         
         var intersect = lineIntersection(e1.x, e1.y, e1.x2, e1.y2, e2.x, e2.y, e2.x2, e2.y2);
@@ -403,6 +402,10 @@
 
         var now = new Date()
         tdiff = Math.abs(now.getTime() - lastTransition.getTime());
+
+      if(Session.get("recording")) {
+        log_event();
+      }
 
         if (e1.silence && e2.silence) {
           Session.set("intersection", false);
@@ -510,6 +513,7 @@
 
         }
        
+       // Declaring notestate
        Session.set("notestate", {
           "timestate": reverseState(timestate),
           "sound": sound,
