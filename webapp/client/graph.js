@@ -363,8 +363,6 @@
         var e1 = dataset[0];
         var e2 = dataset[1];
 
-
-
         var loudness = (e1.loudness + e2.loudness) / 2;
         var loudness_scaled = Math.min(loudness * 500.0, 1.0); // usually loudness <= 0.1
         var r = loudness_scaled * 20.0 + 5.0;
@@ -420,9 +418,6 @@
             case States.WAITING_STUDENT:
             case States.WAITING_TEACHER:
               if (tdiff + cadenceTime > waittime) {
-                waitsupport += 1;
-              }
-              if (waitsupport > minsupport) {
                 goToState(States.SILENCE);
               }
               break;
