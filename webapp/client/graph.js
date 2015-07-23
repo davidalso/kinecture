@@ -83,8 +83,8 @@
     noisesupport = 0;
     waitsupport = 0;
     lastTransition = new Date();
-    // if(Session.get("recording")) {
-    // 	log_event();
+   //  if(Session.get("recording")) {
+   //  	log_event();
 	  // }
   }
 
@@ -100,30 +100,13 @@
   */     
    }
 
-   // This is a copy of what happens later just so I can get access to the kinects. 
-   // If this doesn't work I may need to put the log functions inside the autorun, but I don't know if that's an option.
-   // Then again, it looks like I might be able to access these if I do a Session.set? It happens with intersect where we get.intersect before it's been set.
-   var request = {
-      _id: {
-        $in: [Session.get("left"), Session.get("right")]
-      }
-    }
-   var datatemp = Kinects.find(request).fetch();
-   if (datatemp.length >= 2) {
-      var t1 = datatemp[0];
-      var t2 = datatemp[1];
-    }
-
-
-   function log_event(t1,t2) {
+ 
+   function log_event() {
    	url = "http://gcf.cmu-tbank.com/david/add_classroom_value.php";
    	dict = {};
    	// This was to test the php.
     // "timestamp=12345&eventType=abc&speakerX=1&speakerY=2&condition=blah&sessionID=session1";
     
-
-    // We're going to act like order doesn't matter.
-
    	var d = new Date();
 
    	//timestamp
@@ -143,34 +126,20 @@
      		dict["speakerY"]=null;
      	}
 
-	//condition
-   	// dict["condition"]=encodeURIComponent(Session.get("condition"));
+  	// condition
+   	dict["condition"]=encodeURIComponent(Session.get("condition"));
 
-   	// angleLeft
-   dict["angleLeft"]=t2.angle;
+    // Individual Kinect data
+     dict["angleLeft"]=Session.get("notestate")["angleLeft"];
+     dict["angleRight"]=Session.get("notestate")["angleRight"];
+     dict["confidenceLeft"]=Session.get("notestate")["confidenceLeft"];
+     dict["confidenceRight"]=Session.get("notestate")["confidenceRight"];
+     dict["loudnessLeft"]=Session.get("notestate")["loudnessLeft"];
+     dict["loudnessRight"]=Session.get("notestate")["loudnessRight"];
+     dict["silenceLeft"]=Session.get("notestate")["silenceLeft"];
+     dict["silenceRight"]=Session.get("notestate")["silenceRight"];
 
-   // angleRight
-   dict["angleRight"]=t1.angle;
-
-   // confidenceLeft
-   dict["confidenceLeft"]=t2.confidence;
-
-   // confidenceRight
-   dict["confidenceRight"]=t1.confidence;
-
-   // loudnessLeft
-   dict["loudnessLeft"]=t2.loudness;
-
-   // loudnessRight
-   dict["loudnessRight"]=t1.loudness;
-
-   // silenceLeft
-   dict["silenceLeft"]=t2.silence;
-
-   // silenceRight
-   dict["silenceRight"]=t1.silence;
-
-   	//session
+    //session
    	dict["sessionID"]=encodeURIComponent(Session.get("sessionID"));
     console.log("sending",dict);
     HTTP.call("GET",url,
@@ -194,7 +163,7 @@
     dict["eventType"]="Session_Start";
     dict["speakerX"]=null;
     dict["speakerY"]=null;
-    // dict["condition"]=encodeURIComponent(Session.get("condition"));
+    dict["condition"]=encodeURIComponent(Session.get("condition"));
     dict["sessionID"]=encodeURIComponent(Session.get("sessionID"));
     dict["angleLeft"]=null;
     dict["angleRight"]=null;
@@ -223,7 +192,7 @@
     dict["eventType"]="Session_End";
     dict["speakerX"]=null;
     dict["speakerY"]=null;
-    // dict["condition"]=encodeURIComponent(Session.get("condition"));
+    dict["condition"]=encodeURIComponent(Session.get("condition"));
     dict["sessionID"]=encodeURIComponent(Session.get("sessionID"));
     dict["angleLeft"]=null;
     dict["angleRight"]=null;
@@ -314,6 +283,11 @@
     var closedLineFunction = function(d) {
       return lineFunction(d) + "Z";
     };
+
+    // updates database about 10 times per second
+      if (Meteor.isClient) {
+      Meteor.setInterval( function() { if(Session.get("recording")) { log_event(); } }, 100 );
+      }
 
 
     Deps.autorun(function() {
@@ -427,10 +401,12 @@
         var e2 = dataset[1];
 
         var loudness = (e1.loudness + e2.loudness) / 2;
+        var loudnessLeft = e2.loudness;
+        var loudnessRight = e1.loudness;
         var loudness_scaled = Math.min(loudness * 500.0, 1.0); // usually loudness <= 0.1
         var r = loudness_scaled * 20.0 + 5.0;
         
-        // For human comprehension
+        // For human comprehension, debuggin, and logging
         var LeftSound = (e2.loudness * 100000.0  + 5.0) | 0;
         var RightSound = (e1.loudness * 100000.0  + 5.0) | 0;
         var sound = (((e1.loudness + e2.loudness) / 2) * 100000.0  + 5.0) | 0;
@@ -438,9 +414,16 @@
         var angleLeft = e2.angle;
         var angleRight = e1.angle;
 
+        var confidenceLeft = e2.confidence;
+        var confidenceRight = e1.confidence;
+
+        var silenceLeft = e2.silence;
+        var silenceRight = e1.silence;
+
         
         var intersect = lineIntersection(e1.x, e1.y, e1.x2, e1.y2, e2.x, e2.y, e2.x2, e2.y2);
-         
+        
+        
         if (sound > roomThreshold) {
           Session.set("intersection", intersect);
         } 
@@ -464,9 +447,26 @@
         var now = new Date()
         tdiff = Math.abs(now.getTime() - lastTransition.getTime());
 
-      if(Session.get("recording")) {
-        log_event(e1,e2);
-      }
+        // Declaring notestate
+       Session.set("notestate", {
+          "timestate": reverseState(timestate),
+          "sound": sound,
+          "LeftSound": LeftSound,
+          "RightSound": RightSound,
+          "angleLeft": angleLeft,
+          "angleRight": angleRight,
+          "silencesupport": silencesupport,
+          "noisesupport": noisesupport,
+          "waitsupport": waitsupport,
+          "tdiff": tdiff,
+          "loudnessLeft": loudnessLeft,
+          "loudnessRight": loudnessRight,
+          "confidenceLeft": confidenceLeft,
+          "confidenceRight": confidenceRight,
+          "silenceLeft": silenceLeft,
+          "silenceRight": silenceRight
+        }); 
+
 
         if (e1.silence && e2.silence) {
           Session.set("intersection", false);
@@ -573,20 +573,6 @@
           // on one side and not the other, or when two noises do not intersect
 
         }
-       
-       // Declaring notestate
-       Session.set("notestate", {
-          "timestate": reverseState(timestate),
-          "sound": sound,
-          "LeftSound": LeftSound,
-          "RightSound": RightSound,
-          "angleLeft": angleLeft, // might not be nec to have angleLeft for log. It's just e2.angle
-          "angleRight": angleRight,
-          "silencesupport": silencesupport,
-          "noisesupport": noisesupport,
-          "waitsupport": waitsupport,
-          "tdiff": tdiff
-        }); 
       } 
 
       else {
