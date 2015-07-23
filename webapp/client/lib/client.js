@@ -46,6 +46,12 @@ Template.body.helpers({
   kinects: function() {
     return Kinects.find({});
   },
+  angleLeft: function() {
+    return JSON.stringify(Session.get("angleLeft"));
+  },
+  angleRight: function() {
+    return JSON.stringify(Session.get("angleRight"));
+  },
   intersection: function() {
     return JSON.stringify(Session.get("intersection"));
   },
