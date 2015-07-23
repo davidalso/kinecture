@@ -47,11 +47,20 @@ Template.body.helpers({
   kinects: function() {
     return Kinects.find({});
   },
+  angleLeft: function() {
+    return JSON.stringify(Session.get("angleLeft"));
+  },
+  angleRight: function() {
+    return JSON.stringify(Session.get("angleRight"));
+  },
   intersection: function() {
     return JSON.stringify(Session.get("intersection"));
   },
   notestate: function() {
-    return JSON.stringify(Session.get("notestate"));
+    var string = JSON.stringify(Session.get("notestate"));
+    string = string.replace('timestate','event type');
+    string = string.replace(/,/g,'<br>');
+    return string;
   },
   delayframe:function() {
     return Session.get("delayframe");

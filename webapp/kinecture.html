@@ -21,7 +21,23 @@
     {{> record}}
 
     {{#unless recording}}
-    <div>Notification State: {{notestate}}</div>
+    
+<!--     <table class="table">
+      <tr>
+        <th>timestate</th>
+        <th>loudness</th>
+        <th>loudness_scaled</th>
+        <th>silencesupport</th>
+        <th>noisesupport</th>
+        <th>waitsupport</th>
+        <th>tdiff</th>
+      </tr>
+      <tr>
+        {{notestate}}
+      </tr>
+      </table> -->
+
+    <div>Notification State: <br> {{{notestate}}}</div>
     
     <header>
       <h1>Kinect Angles</h1>
@@ -153,6 +169,10 @@
   <label>
     TAzone
     <input type="number" class="TAzone" value="{{TAzone}}">
+  </label>
+  <label>
+    Threshold
+    <input type="number" class="threshold" value="{{threshold}}">
   </label>
   {{/with}}
 </template>
