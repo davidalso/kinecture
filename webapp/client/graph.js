@@ -115,7 +115,7 @@
     }
 
 
-   function log_event() {
+   function log_event(t1,t2) {
    	url = "http://gcf.cmu-tbank.com/david/add_classroom_value.php";
    	dict = {};
    	// This was to test the php.
@@ -139,26 +139,14 @@
      		dict["speakerY"]=inter.y;
      	}
      	else {
-     		dict["speakerX"]="NA";
-     		dict["speakerY"]="NA";
+     		dict["speakerX"]=null;
+     		dict["speakerY"]=null;
      	}
 
 	//condition
    	// dict["condition"]=encodeURIComponent(Session.get("condition"));
 
-   	//session
-   	dict["sessionID"]=encodeURIComponent(Session.get("sessionID"));
-    console.log("sending",dict);
-    HTTP.call("GET",url,
-	   	{params:dict},
-	   	function(error,result){
-	   		if(error) {
-	   			console.log("HTTP POST error: ",result,error);
-	   		}
-	   	});
-   }
-
-   // angleLeft
+   	// angleLeft
    dict["angleLeft"]=t2.angle;
 
    // angleRight
@@ -182,6 +170,20 @@
    // silenceRight
    dict["silenceRight"]=t1.silence;
 
+   	//session
+   	dict["sessionID"]=encodeURIComponent(Session.get("sessionID"));
+    console.log("sending",dict);
+    HTTP.call("GET",url,
+	   	{params:dict},
+	   	function(error,result){
+	   		if(error) {
+	   			console.log("HTTP POST error: ",result,error);
+	   		}
+	   	});
+   }
+
+
+
 
    function log_start() {
     url = "http://gcf.cmu-tbank.com/david/add_classroom_value.php";
@@ -190,18 +192,18 @@
     var d = new Date();
     dict["timestamp"]=d.getTime();
     dict["eventType"]="Session_Start";
-    dict["speakerX"]="NA";
-    dict["speakerY"]="NA";
+    dict["speakerX"]=null;
+    dict["speakerY"]=null;
     // dict["condition"]=encodeURIComponent(Session.get("condition"));
     dict["sessionID"]=encodeURIComponent(Session.get("sessionID"));
-    dict["angleLeft"]="NA";
-    dict["angleRight"]="NA";
-    dict["confidenceLeft"]="NA";
-    dict["confidenceRight"]="NA";
-    dict["loudnessLeft"]="NA";
-    dict["loudnessRight"]="NA";
-    dict["silenceLeft"]="NA";
-    dict["silenceRight"]="NA";
+    dict["angleLeft"]=null;
+    dict["angleRight"]=null;
+    dict["confidenceLeft"]=null;
+    dict["confidenceRight"]=null;
+    dict["loudnessLeft"]=null;
+    dict["loudnessRight"]=null;
+    dict["silenceLeft"]=null;
+    dict["silenceRight"]=null;
     
     HTTP.call("GET",url,
       {params:dict},
@@ -219,18 +221,18 @@
     var d = new Date();
     dict["timestamp"]=d.getTime();
     dict["eventType"]="Session_End";
-    dict["speakerX"]="NA";
-    dict["speakerY"]="NA";
+    dict["speakerX"]=null;
+    dict["speakerY"]=null;
     // dict["condition"]=encodeURIComponent(Session.get("condition"));
     dict["sessionID"]=encodeURIComponent(Session.get("sessionID"));
-    dict["angleLeft"]="NA";
-    dict["angleRight"]="NA";
-    dict["confidenceLeft"]="NA";
-    dict["confidenceRight"]="NA";
-    dict["loudnessLeft"]="NA";
-    dict["loudnessRight"]="NA";
-    dict["silenceLeft"]="NA";
-    dict["silenceRight"]="NA";
+    dict["angleLeft"]=null;
+    dict["angleRight"]=null;
+    dict["confidenceLeft"]=null;
+    dict["confidenceRight"]=null;
+    dict["loudnessLeft"]=null;
+    dict["loudnessRight"]=null;
+    dict["silenceLeft"]=null;
+    dict["silenceRight"]=null;
     
     HTTP.call("GET",url,
       {params:dict},
@@ -463,7 +465,7 @@
         tdiff = Math.abs(now.getTime() - lastTransition.getTime());
 
       if(Session.get("recording")) {
-        log_event();
+        log_event(e1,e2);
       }
 
         if (e1.silence && e2.silence) {
